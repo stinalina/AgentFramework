@@ -10,13 +10,16 @@ AIAgent agent = new AzureOpenAIClient(
   new AzureCliCredential())
     .GetChatClient("TripAdvisor_Agent")
     .AsAIAgent(
-      instructions: "You are a trip advisor assistant.",
+      instructions: "You are a trip advisor assistant. Don't talk to long, each Token is money and I don't have that much.",
       tools: [
          AIFunctionFactory.Create(Tools.GetWeather),
          AIFunctionFactory.Create(Tools.GetCountries)
       ]);
 
-Console.WriteLine(await agent.RunAsync("What country should I vist when I fly to Oceania?"));
+AgentSession session = await agent.CreateSessionAsync();
+
+Console.WriteLine(await agent.RunAsync("What country should I vist when I fly to Oceania?", session));
+Console.WriteLine(await agent.RunAsync("What I asked you the first time?", session));
 
 // Stream the response
 //await foreach (var update in agent.RunStreamingAsync("Tell me a one-sentence fun fact."))
