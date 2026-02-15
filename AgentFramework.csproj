@@ -16,4 +16,8 @@
 	  <PackageReference Include="Microsoft.Agents.AI.Workflows" Version="1.0.0-preview.260212.1" />
   </ItemGroup>
 
+
+	<ItemGroup>
+		<Content Include="instructions/**" CopyToOutputDirectory="PreserveNewest" />
+	</ItemGroup>
 </Project>
