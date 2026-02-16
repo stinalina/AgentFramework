@@ -1,20 +1,18 @@
-﻿using AgentFramework;
+﻿using DotNetEnv;
+using AgentFramework;
+using System.Text.Json;
+
 using Azure.AI.OpenAI;
 using Azure.Identity;
-using DotNetEnv;
 using Microsoft.Agents.AI;
 using Microsoft.Extensions.AI;
-using OpenAI;
-using OpenAI.Chat;
-using System;
-using System.ClientModel.Primitives;
-using System.Text.Json;
-using System;
+using OpenAI.Responses;
+using ModelContextProtocol.Client;
 
-//Env.Load(Path.Combine(Directory.GetCurrentDirectory(), ".env"));
 
-//var url = Environment.GetEnvironmentVariable("AZURE_OPENAI_ENDPOINT") ?? throw new InvalidOperationException("AZURE_OPENAI_ENDPOINT is not set.");
-
+Env.Load(Path.Combine(AppContext.BaseDirectory, ".env"));
+var endpoint = Environment.GetEnvironmentVariable("AZURE_OPENAI_ENDPOINT") ?? throw new InvalidOperationException("AZURE_OPENAI_ENDPOINT is not set.");
+var deploymentName = Environment.GetEnvironmentVariable("AZURE_OPENAI_DEPLOYMENT_NAME") ?? throw new InvalidOperationException("AZURE_OPENAI_DEPLOYMENT_NAME is not set.");
 
 JsonElement schema = AIJsonUtilities.CreateJsonSchema(typeof(TripInfo));
 var chatOptions_responseFormat = new ChatOptions()
@@ -32,18 +30,39 @@ var chatOptions_responseFormat = new ChatOptions()
 var africaAgentInstructions = File.ReadAllText(
   Path.Combine(AppContext.BaseDirectory, "instructions/africa_agent.instructions.txt")); //TODO check, if this is found when deployed!
 
+await using var mcpClient = await McpClient.CreateAsync(new StdioClientTransport(new()
+{
+  Name = "MCPServer",
+  Command = "npx",
+  Arguments = ["-y", "--verbose", "@modelcontextprotocol/server-github"], //https://github.com/modelcontextprotocol/csharp-sdk
+}));
+
+// Retrieve the list of tools available on the GitHub server
+var mcpTools = await mcpClient.ListToolsAsync().ConfigureAwait(false);
+
+await using var mcpClientWikipedia = await McpClient.CreateAsync(new StdioClientTransport(new() //https://github.com/Rudra-ravi/wikipedia-mcp
+{
+  Name = "MCPServer Wikipedia",
+  Command = "npx",
+  Arguments = ["--country", "Germany", "@modelcontextprotocol/wikipedia-mcp"],
+}));
+var wikipediaTools = await mcpClientWikipedia.ListToolsAsync().ConfigureAwait(false);
+
 // Using the Azure OpenAI SDK
 // Currently, only agents that use the OpenAI Responses API support background responses: OpenAI Responses Agent and Azure OpenAI Responses Agent. GetOpenAIResponseClient
+#pragma warning disable OPENAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 AIAgent agent = new AzureOpenAIClient(
-  new Uri("https://oai-coco.openai.azure.com/"),
-  new AzureCliCredential())
-    .GetChatClient("TripAdvisor_Agent")
-    .AsAIAgent( //new ChatClientAgentOptions()
-      instructions: africaAgentInstructions,
-      tools: [
-         AIFunctionFactory.Create(AgentFramework.Tools.GetWeather),
-         AIFunctionFactory.Create(AgentFramework.Tools.GetCountries)
-      ]);
+    new Uri(endpoint),
+    new DefaultAzureCredential())
+     .GetResponsesClient(deploymentName)
+     .AsAIAgent(instructions: africaAgentInstructions, tools: [
+       AIFunctionFactory.Create(AgentFramework.Tools.GetWeather),
+        AIFunctionFactory.Create(AgentFramework.Tools.GetCountries),
+         .. mcpTools.Cast<AITool>(), //using third party MCP Server,
+         .. wikipediaTools.Cast<AITool>()
+        //new WebSearchToolDefinition() //enable web search
+       ]);
+#pragma warning restore OPENAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 
 
 
