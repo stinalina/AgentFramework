@@ -38,9 +38,22 @@ await using var mcpClient = await McpClient.CreateAsync(new StdioClientTransport
   Arguments = ["-y", "--verbose", "@modelcontextprotocol/server-github"], //https://github.com/modelcontextprotocol/csharp-sdk
 }));
 
+await using var wikipediaMcpClient = await McpClient.CreateAsync(new StdioClientTransport(new()
+{
+  Name = "Wikipedia MCP Server",
+  Command = "docker",
+  Arguments = [
+    "run",
+    "-i",
+    "--rm",
+    "mcp/wikipedia-mcp"
+    ], //https://github.com/modelcontextprotocol/csharp-sdk
+}));
+
 // found available servers here: https://github.com/modelcontextprotocol/servers
 // Retrieve the list of tools available on the GitHub server
 var mcpTools = await mcpClient.ListToolsAsync().ConfigureAwait(false);
+var wikipediaMcpTools = await wikipediaMcpClient.ListToolsAsync().ConfigureAwait(false);
 
 //Not working. Clone it and run it in docker instead...
 //await using var mcpClientWikipedia = await McpClient.CreateAsync(new StdioClientTransport(new() //https://github.com/Rudra-ravi/wikipedia-mcp
@@ -62,10 +75,11 @@ AIAgent agent = new AzureOpenAIClient(
        AIFunctionFactory.Create(AgentFramework.Tools.GetWeather),
         AIFunctionFactory.Create(AgentFramework.Tools.GetCountries),
         .. mcpTools.Cast<AITool>(), //using third party MCP Server,
+        .. wikipediaMcpTools.Cast<AITool>(), //using third party MCP Server,
         //new WebSearchToolDefinition() //enable web search
        ]);
 #pragma warning restore OPENAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
-
+// Create a specialized editor agent
 //Use sth like this if you need DefaultAzureCredential
 //var credential = new DefaultAzureCredential(new DefaultAzureCredentialOptions
 //{
@@ -98,6 +112,7 @@ AgentRunOptions options = new()
 
 try
 {
+  Console.WriteLine("What country should I vist when I fly to Oceania?");
   var response = await agent.RunAsync("What country should I vist when I fly to Oceania?", session, options);
   // Continue to poll until the final response is received
   // The initial call may complete immediately (no continuation token) or start a background operation (with continuation token)
