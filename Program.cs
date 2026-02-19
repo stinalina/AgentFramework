@@ -11,9 +11,9 @@ using ModelContextProtocol.Client;
 using OpenAI.Chat;
 
 
-//Env.Load(Path.Combine(AppContext.BaseDirectory, ".env"));
-//var endpoint = Environment.GetEnvironmentVariable("AZURE_OPENAI_ENDPOINT") ?? throw new InvalidOperationException("AZURE_OPENAI_ENDPOINT is not set.");
-//var deploymentName = Environment.GetEnvironmentVariable("AZURE_OPENAI_DEPLOYMENT_NAME") ?? throw new InvalidOperationException("AZURE_OPENAI_DEPLOYMENT_NAME is not set.");
+Env.Load(Path.Combine(AppContext.BaseDirectory, ".env"));
+var endpoint = Environment.GetEnvironmentVariable("AZURE_OPENAI_ENDPOINT") ?? throw new InvalidOperationException("AZURE_OPENAI_ENDPOINT is not set.");
+var deploymentName = Environment.GetEnvironmentVariable("AZURE_OPENAI_DEPLOYMENT_NAME") ?? throw new InvalidOperationException("AZURE_OPENAI_DEPLOYMENT_NAME is not set.");
 
 //JsonElement schema = AIJsonUtilities.CreateJsonSchema(typeof(TripInfo));
 //var chatOptions_responseFormat = new ChatOptions()
@@ -55,9 +55,9 @@ var mcpTools = await mcpClient.ListToolsAsync().ConfigureAwait(false);
 // Currently, only agents that use the OpenAI Responses API support background responses: OpenAI Responses Agent and Azure OpenAI Responses Agent. GetOpenAIResponseClient
 #pragma warning disable OPENAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 AIAgent agent = new AzureOpenAIClient(
-    new Uri("https://oai-coco.openai.azure.com/"),
+    new Uri(endpoint),
     new AzureCliCredential())
-     .GetChatClient("TripAdvisor_Agent")
+     .GetChatClient(deploymentName)
      .AsAIAgent(instructions: africaAgentInstructions, tools: [
        AIFunctionFactory.Create(AgentFramework.Tools.GetWeather),
         AIFunctionFactory.Create(AgentFramework.Tools.GetCountries),

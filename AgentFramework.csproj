@@ -20,5 +20,6 @@
 
 	<ItemGroup>
 		<Content Include="instructions/**" CopyToOutputDirectory="PreserveNewest" />
+		<Content Include=".env" CopyToOutputDirectory="PreserveNewest" />
 	</ItemGroup>
 </Project>
