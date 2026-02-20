@@ -9,7 +9,11 @@ namespace AgentFramework.Workflows;
 internal class MyWorkflow
 {
   //TODO ctr mit entsprechenden Agenten
-  //Workflow workflow =  AgentWorkflowBuilder.BuildSequential(writer, editor);
+  //orkflow workflow =  AgentWorkflowBuilder.CreateHandoffBuilderWith;
+
+  //TravelAgentContact
+  //ResearcherAgentPool
+  //TravelAgentSales
 
   //AIAgent workflowAgent = await workflow.AsAgentAsync();
 

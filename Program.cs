@@ -1,6 +1,4 @@
 ﻿using DotNetEnv;
-using AgentFramework;
-using System.Text.Json;
 
 using Azure.AI.OpenAI;
 using Azure.Identity;
@@ -10,20 +8,23 @@ using OpenAI.Responses;
 using ModelContextProtocol.Client;
 using OpenAI.Chat;
 
+using OpenAI.Assistants;
+using System.Text.Json;
+using AgentFramework;
 
 Env.Load(Path.Combine(AppContext.BaseDirectory, ".env"));
 var endpoint = Environment.GetEnvironmentVariable("AZURE_OPENAI_ENDPOINT") ?? throw new InvalidOperationException("AZURE_OPENAI_ENDPOINT is not set.");
 var deploymentName = Environment.GetEnvironmentVariable("AZURE_OPENAI_DEPLOYMENT_NAME") ?? throw new InvalidOperationException("AZURE_OPENAI_DEPLOYMENT_NAME is not set.");
 
-//JsonElement schema = AIJsonUtilities.CreateJsonSchema(typeof(TripInfo));
-//var chatOptions_responseFormat = new ChatOptions()
-//{
-//  ResponseFormat = Microsoft.Extensions.AI.ChatResponseFormat.ForJsonSchema(
-//    schema: schema,
-//    schemaName: nameof(TripInfo),
-//    schemaDescription: "Information about a Trip including all required, well structures data."
-//   ),
-//};
+JsonElement schema = AIJsonUtilities.CreateJsonSchema(typeof(TripInfo));
+var chatOptions_responseFormat = new ChatOptions()
+{
+  ResponseFormat = Microsoft.Extensions.AI.ChatResponseFormat.ForJsonSchema(
+    schema: schema,
+    schemaName: nameof(TripInfo),
+    schemaDescription: "Information about a Trip including all required, well structures data."
+   ),
+};
 // Theh deserialize the final response
 //var personInfo = response.Deserialize<PersonInfo>(JsonSerializerOptions.Web);
 //Console.WriteLine($"Name: {personInfo.Name}, Age: {personInfo.Age}, Occupation: {personInfo.Occupation}");
@@ -47,7 +48,7 @@ await using var wikipediaMcpClient = await McpClient.CreateAsync(new StdioClient
     "-i",
     "--rm",
     "mcp/wikipedia-mcp"
-    ], //https://github.com/modelcontextprotocol/csharp-sdk
+    ],
 }));
 
 // found available servers here: https://github.com/modelcontextprotocol/servers
@@ -55,14 +56,10 @@ await using var wikipediaMcpClient = await McpClient.CreateAsync(new StdioClient
 var mcpTools = await mcpClient.ListToolsAsync().ConfigureAwait(false);
 var wikipediaMcpTools = await wikipediaMcpClient.ListToolsAsync().ConfigureAwait(false);
 
-//Not working. Clone it and run it in docker instead...
-//await using var mcpClientWikipedia = await McpClient.CreateAsync(new StdioClientTransport(new() //https://github.com/Rudra-ravi/wikipedia-mcp
-//{
-//  Name = "MCPServer Wikipedia",
-//  Command = "npx",
-//  Arguments = ["-y", "github:Rudra-ravi/wikipedia-mcp", "--country", "Germany"],
-//}));
-//var wikipediaTools = await mcpClientWikipedia.ListToolsAsync().ConfigureAwait(false);
+// available tools: https://github.com/Rudra-ravi/wikipedia-mcp?tab=readme-ov-file#available-mcp-tools
+var selectedWikipediaTools = wikipediaMcpTools 
+  .Where(tool => tool.Name.Contains("search_wikipedia") || tool.Name.Contains("get_summary"))
+  .ToList();
 
 // Using the Azure OpenAI SDK
 // Currently, only agents that use the OpenAI Responses API support background responses: OpenAI Responses Agent and Azure OpenAI Responses Agent. GetOpenAIResponseClient
@@ -70,14 +67,15 @@ var wikipediaMcpTools = await wikipediaMcpClient.ListToolsAsync().ConfigureAwait
 AIAgent agent = new AzureOpenAIClient(
     new Uri(endpoint),
     new AzureCliCredential())
-     .GetChatClient(deploymentName)
-     .AsAIAgent(instructions: africaAgentInstructions, tools: [
-       AIFunctionFactory.Create(AgentFramework.Tools.GetWeather),
-        AIFunctionFactory.Create(AgentFramework.Tools.GetCountries),
-        .. mcpTools.Cast<AITool>(), //using third party MCP Server,
-        .. wikipediaMcpTools.Cast<AITool>(), //using third party MCP Server,
-        //new WebSearchToolDefinition() //enable web search
-       ]);
+     .GetResponsesClient(deploymentName) //GetResponseClient
+     .AsAIAgent(
+        instructions: africaAgentInstructions, 
+        tools: [
+          AIFunctionFactory.Create(AgentFramework.Tools.GetWeather),
+          AIFunctionFactory.Create(AgentFramework.Tools.GetCountries),
+          .. mcpTools.Cast<AITool>(), //using third party MCP Server,
+          .. selectedWikipediaTools.Cast<AITool>(), //using third party MCP Server,
+          ]);
 #pragma warning restore OPENAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 // Create a specialized editor agent
 //Use sth like this if you need DefaultAzureCredential
@@ -96,24 +94,31 @@ AIAgent agent = new AzureOpenAIClient(
 
 AgentSession session = await agent.CreateSessionAsync();
 
-//var chatOptions = new ChatOptions() { 
-//  Temperature = 0.3f, TopP = 0.8f, MaxOutputTokens = 4096,
-//  ResponseFormat = Microsoft.Extensions.AI.ChatResponseFormat.ForJsonSchema(
-//    schema: schema,
-//    schemaName: nameof(TripInfo),
-//    schemaDescription: "Information about a Trip including all required, well structures data."
-//   ),
-//};
+var chatOptions = new ChatOptions()
+{
+  Temperature = 0.3f,
+  TopP = 0.8f,
+  MaxOutputTokens = 4096,
+  ResponseFormat = Microsoft.Extensions.AI.ChatResponseFormat.ForJsonSchema(
+    schema: schema,
+    schemaName: nameof(TripInfo),
+    schemaDescription: "Information about a Trip including all required, well structures data."
+   ),
+  AllowMultipleToolCalls = true,
+  ToolMode = ChatToolMode.Auto,
+  AllowBackgroundResponses = true,
+};
 
 AgentRunOptions options = new()
 {
-  AllowBackgroundResponses = true
+  AllowBackgroundResponses = true,
 };
 
 try
 {
-  Console.WriteLine("What country should I vist when I fly to Oceania?");
-  var response = await agent.RunAsync("What country should I vist when I fly to Oceania?", session, options);
+  //Console.WriteLine("What country should I vist when I fly to Oceania?");
+  //var response = await agent.RunAsync("What country should I vist when I fly to Oceania?", session, options);
+  var response = await agent.RunAsync("What country should I vist when I fly to Oceania? Please make a research with wikipedia.", session, options);
   // Continue to poll until the final response is received
   // The initial call may complete immediately (no continuation token) or start a background operation (with continuation token)
   while (response.ContinuationToken is not null)
@@ -125,7 +130,8 @@ try
     response = await agent.RunAsync(session, options);
   }
   Console.WriteLine(response.Text);
-  Console.WriteLine("Used Tokens: " + response.Text.Length); //TODO find out!
+  Console.WriteLine("Usage Details: " + JsonSerializer.Serialize(response.Usage));
+  Console.WriteLine(JsonSerializer.Serialize(response.Messages));
 } catch (Exception ex)
 {
   Console.WriteLine("An error occurred: " + ex.Message);

@@ -23,18 +23,7 @@ internal static class Tools
     };
   }
 
-#pragma warning disable MEAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
-  public static HostedMcpServerTool MicrosoftDocMCP()
-  {
-    var mcpTool = new HostedMcpServerTool(
-    serverName: "microsoft_learn",
-    serverAddress: "https://learn.microsoft.com/api/mcp")
-    {
-      AllowedTools = ["microsoft_docs_search"],
-      ApprovalMode = HostedMcpServerToolApprovalMode.NeverRequire //auto approval
-    };
-
-    return mcpTool;
-  }
-#pragma warning restore MEAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+  [Description("Formats the the tripInfo well displayed.")]
+  public static string FormatStory(string title, string author, string story) =>
+    $"Title: {title}\nAuthor: {author}\n\n{story}";
 }
