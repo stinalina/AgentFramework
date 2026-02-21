@@ -6,10 +6,10 @@ using Microsoft.Extensions.AI;
 
 namespace AgentFramework.Workflows;
 
-internal class MyWorkflow
+internal class MyWorkflow //TODO Singleton
 {
   //TODO ctr mit entsprechenden Agenten
-  //orkflow workflow =  AgentWorkflowBuilder.CreateHandoffBuilderWith;
+  //Workflow workflow =  AgentWorkflowBuilder.CreateHandoffBuilderWith;
 
   //TravelAgentContact
   //ResearcherAgentPool
@@ -21,6 +21,10 @@ internal class MyWorkflow
   //    await workflowAgent.RunAsync("Write a short story about a haunted house.");
 
   //Console.WriteLine(workflowResponse.Text);
+
+
+
+
 }
 
 

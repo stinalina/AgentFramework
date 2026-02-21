@@ -4,7 +4,7 @@ using System.Text;
 
 namespace AgentFramework;
 
-internal enum Continents
+internal enum Continent
 {
   Africa,
   America,

@@ -51,13 +51,13 @@ internal class CustomMiddleware
     Console.WriteLine(updates.ToAgentResponse().Messages.Count);
   }
 
-  public static async ValueTask<object?> CustomFunctionCallingMiddleware( //gets called for each function tool that's invoked.
+  public static async ValueTask<object?> FunctionMiddleware_LogUsedTool(
     AIAgent agent,
     FunctionInvocationContext context,
     Func<FunctionInvocationContext, CancellationToken, ValueTask<object?>> next,
     CancellationToken cancellationToken)
   {
-    Console.WriteLine($"Function Name: {context!.Function.Name}");
+    Console.WriteLine($"Function Name: {context.Function.Name}");
     var result = await next(context, cancellationToken);
     Console.WriteLine($"Function Call Result: {result}");
 
@@ -186,7 +186,6 @@ internal class CustomMiddleware
     return new AgentResponse(modifiedMessages);
   }
 
-  // Middleware that catches exceptions and provides graceful fallback response
   public static async Task<AgentResponse> ExceptionHandlingMiddleware(
     IEnumerable<ChatMessage> messages,
     AgentSession? session,
@@ -196,7 +195,6 @@ internal class CustomMiddleware
   {
     try
     {
-      Console.WriteLine("[ExceptionHandler] Executing agent run...");
       return await innerAgent.RunAsync(messages, session, options, cancellationToken);
     }
     catch (TimeoutException ex)
