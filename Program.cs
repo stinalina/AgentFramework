@@ -11,23 +11,13 @@ using OpenAI.Chat;
 using OpenAI.Assistants;
 using System.Text.Json;
 using AgentFramework;
+using Microsoft.Extensions.Options;
 
 Env.Load(Path.Combine(AppContext.BaseDirectory, ".env"));
 var endpoint = Environment.GetEnvironmentVariable("AZURE_OPENAI_ENDPOINT") ?? throw new InvalidOperationException("AZURE_OPENAI_ENDPOINT is not set.");
 var deploymentName = Environment.GetEnvironmentVariable("AZURE_OPENAI_DEPLOYMENT_NAME") ?? throw new InvalidOperationException("AZURE_OPENAI_DEPLOYMENT_NAME is not set.");
 
 JsonElement schema = AIJsonUtilities.CreateJsonSchema(typeof(TripInfo));
-var chatOptions_responseFormat = new ChatOptions()
-{
-  ResponseFormat = Microsoft.Extensions.AI.ChatResponseFormat.ForJsonSchema(
-    schema: schema,
-    schemaName: nameof(TripInfo),
-    schemaDescription: "Information about a Trip including all required, well structures data."
-   ),
-};
-// Theh deserialize the final response
-//var personInfo = response.Deserialize<PersonInfo>(JsonSerializerOptions.Web);
-//Console.WriteLine($"Name: {personInfo.Name}, Age: {personInfo.Age}, Occupation: {personInfo.Occupation}");
 
 var africaAgentInstructions = File.ReadAllText(
   Path.Combine(AppContext.BaseDirectory, "instructions/africa_agent.instructions.txt")); //TODO check, if this is found when deployed!
@@ -61,13 +51,27 @@ var selectedWikipediaTools = wikipediaMcpTools
   .Where(tool => tool.Name.Contains("search_wikipedia") || tool.Name.Contains("get_summary"))
   .ToList();
 
-// Using the Azure OpenAI SDK
-// Currently, only agents that use the OpenAI Responses API support background responses: OpenAI Responses Agent and Azure OpenAI Responses Agent. GetOpenAIResponseClient
+var chatOptions = new ChatOptions()
+{
+  Temperature = 0.3f,
+  TopP = 0.8f,
+  MaxOutputTokens = 4096,
+  ResponseFormat = Microsoft.Extensions.AI.ChatResponseFormat.ForJsonSchema(
+    schema: schema,
+    schemaName: nameof(TripInfo),
+    schemaDescription: "Information about a Trip including all required, well structures data."
+   ),
+  AllowMultipleToolCalls = true,
+  ToolMode = ChatToolMode.Auto,
+  AllowBackgroundResponses = true,
+};
+
+
 #pragma warning disable OPENAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 AIAgent agent = new AzureOpenAIClient(
     new Uri(endpoint),
     new AzureCliCredential())
-     .GetResponsesClient(deploymentName) //GetResponseClient
+     .GetResponsesClient(deploymentName)
      .AsAIAgent(
         instructions: africaAgentInstructions, 
         tools: [
@@ -75,7 +79,18 @@ AIAgent agent = new AzureOpenAIClient(
           AIFunctionFactory.Create(AgentFramework.Tools.GetCountries),
           .. mcpTools.Cast<AITool>(), //using third party MCP Server,
           .. selectedWikipediaTools.Cast<AITool>(), //using third party MCP Server,
-          ]);
+          ]
+        //clientFactory: (client) => client.ConfigureOptions(opts => 
+        //{
+        //  opts.Temperature = chatOptions.Temperature;
+        //  opts.TopP = chatOptions.TopP;
+        //  opts.MaxOutputTokens = chatOptions.MaxOutputTokens;
+        //  opts.ResponseFormat = chatOptions.ResponseFormat;
+        //  opts.AllowMultipleToolCalls = chatOptions.AllowMultipleToolCalls;
+        //  opts.ToolMode = chatOptions.ToolMode;
+        //  opts.AllowBackgroundResponses = chatOptions.AllowBackgroundResponses;
+        //})
+        );
 #pragma warning restore OPENAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 // Create a specialized editor agent
 //Use sth like this if you need DefaultAzureCredential
@@ -94,20 +109,7 @@ AIAgent agent = new AzureOpenAIClient(
 
 AgentSession session = await agent.CreateSessionAsync();
 
-var chatOptions = new ChatOptions()
-{
-  Temperature = 0.3f,
-  TopP = 0.8f,
-  MaxOutputTokens = 4096,
-  ResponseFormat = Microsoft.Extensions.AI.ChatResponseFormat.ForJsonSchema(
-    schema: schema,
-    schemaName: nameof(TripInfo),
-    schemaDescription: "Information about a Trip including all required, well structures data."
-   ),
-  AllowMultipleToolCalls = true,
-  ToolMode = ChatToolMode.Auto,
-  AllowBackgroundResponses = true,
-};
+
 
 AgentRunOptions options = new()
 {
