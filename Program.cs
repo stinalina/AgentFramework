@@ -12,6 +12,7 @@ using OpenAI.Assistants;
 using System.Text.Json;
 using AgentFramework;
 using Microsoft.Extensions.Options;
+using ChatMessage = Microsoft.Extensions.AI.ChatMessage;
 
 Env.Load(Path.Combine(AppContext.BaseDirectory, ".env"));
 var endpoint = Environment.GetEnvironmentVariable("AZURE_OPENAI_ENDPOINT") ?? throw new InvalidOperationException("AZURE_OPENAI_ENDPOINT is not set.");
@@ -68,28 +69,39 @@ var chatOptions = new ChatOptions()
 
 
 #pragma warning disable OPENAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+//ResponsesClient agent = new AzureOpenAIClient(
+//ChatClientAgent agent = new AzureOpenAIClient(
 AIAgent agent = new AzureOpenAIClient(
     new Uri(endpoint),
     new AzureCliCredential())
      .GetResponsesClient(deploymentName)
      .AsAIAgent(
-        instructions: africaAgentInstructions, 
+        instructions: africaAgentInstructions,
         tools: [
           AIFunctionFactory.Create(AgentFramework.Tools.GetWeather),
           AIFunctionFactory.Create(AgentFramework.Tools.GetCountries),
+          AIFunctionFactory.Create(AgentFramework.Tools.GetDateTime),
           .. mcpTools.Cast<AITool>(), //using third party MCP Server,
-          .. selectedWikipediaTools.Cast<AITool>(), //using third party MCP Server,
-          ]
-        //clientFactory: (client) => client.ConfigureOptions(opts => 
-        //{
-        //  opts.Temperature = chatOptions.Temperature;
-        //  opts.TopP = chatOptions.TopP;
-        //  opts.MaxOutputTokens = chatOptions.MaxOutputTokens;
-        //  opts.ResponseFormat = chatOptions.ResponseFormat;
-        //  opts.AllowMultipleToolCalls = chatOptions.AllowMultipleToolCalls;
-        //  opts.ToolMode = chatOptions.ToolMode;
-        //  opts.AllowBackgroundResponses = chatOptions.AllowBackgroundResponses;
-        //})
+          //.. selectedWikipediaTools.Cast<AITool>(),
+          ],
+        //services: [
+        //  new ChatHistoryProvider(chatOptions)
+        // ]
+        clientFactory: (client) => client.AsBuilder()
+          .ConfigureOptions(options => {
+            options.Temperature = chatOptions.Temperature;
+            options.TopP = chatOptions.TopP;
+            options.MaxOutputTokens = chatOptions.MaxOutputTokens;
+            options.ResponseFormat = chatOptions.ResponseFormat;
+            options.AllowMultipleToolCalls = true;
+            options.ToolMode = ChatToolMode.Auto;
+            options.AllowBackgroundResponses = true;
+          })
+          .Use( //use chatclient middlware
+            getResponseFunc: CustomMiddleware.CustomChatClientMiddleware,
+            getStreamingResponseFunc: null
+           )
+          .Build()
         );
 #pragma warning restore OPENAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 // Create a specialized editor agent
@@ -106,21 +118,29 @@ AIAgent agent = new AzureOpenAIClient(
 //  ExcludeAzureCliCredential = false,
 //});
 
+var middlewareEnabledAgent = agent //use agent middleware
+    .AsBuilder()
+        .Use(CustomMiddleware.CustomFunctionCallingMiddleware)
+        .Use(runFunc: CustomMiddleware.CustomAgentRunMiddleware, runStreamingFunc: null)
+        .Use(runFunc: CustomMiddleware.GuardrailMiddleware, runStreamingFunc: null)
+        .Use(runFunc: CustomMiddleware.ResultOverrideMiddleware, runStreamingFunc: null)
+        .Use(runFunc: CustomMiddleware.ExceptionHandlingMiddleware, runStreamingFunc: null)
+    .Build();
+// Blocked request — guardrail returns early without calling agent
+//Console.WriteLine(await guardedAgent.RunAsync("What is my password?"));
 
 AgentSession session = await agent.CreateSessionAsync();
 
-
-
-AgentRunOptions options = new()
+AgentRunOptions options = new() //pass run level middleware here
 {
   AllowBackgroundResponses = true,
 };
-
+//var runOptions = new AgentRunOptions { RunMiddleware = DebugMiddleware };
 try
 {
-  //Console.WriteLine("What country should I vist when I fly to Oceania?");
-  //var response = await agent.RunAsync("What country should I vist when I fly to Oceania?", session, options);
-  var response = await agent.RunAsync("What country should I vist when I fly to Oceania? Please make a research with wikipedia.", session, options);
+  Console.WriteLine("What country should I vist when I fly to Oceania?");
+  var response = await agent.RunAsync("What country should I vist when I fly to Oceania?", session, options);
+  //var response = await agent.RunAsync("What country should I vist when I fly to Oceania? Please make a research with wikipedia.", session, options);
   // Continue to poll until the final response is received
   // The initial call may complete immediately (no continuation token) or start a background operation (with continuation token)
   while (response.ContinuationToken is not null)
@@ -134,10 +154,26 @@ try
   Console.WriteLine(response.Text);
   Console.WriteLine("Usage Details: " + JsonSerializer.Serialize(response.Usage));
   Console.WriteLine(JsonSerializer.Serialize(response.Messages));
-} catch (Exception ex)
+}
+catch (Exception ex)
 {
   Console.WriteLine("An error occurred: " + ex.Message);
 }
+// Persist and restore later
+//Treat AgentSession as an opaque state object and restore it with the same agent/provider configuration that created it.
+var serialized = await agent.SerializeSessionAsync(session); //Idea. Session are passed between the agents
+  Console.WriteLine("Serialized session: " + serialized); // Serialized session: {"conversationId":"resp_04196b0246fa0d0700699951f1bc1c8194884b3a5d9f506c53"}
+  AgentSession resumed = await agent.DeserializeSessionAsync(serialized);
+
+
+// When in-memory chat history storage is used, it's possible to access the chat history
+// that is stored in the session via the provider attached to the agent.
+var provider = agent.GetService<InMemoryChatHistoryProvider>();
+List<ChatMessage>? messages = provider?.ToList(); //TODO wie setze ich die session?
+//List<ChatMessage>? messages = provider?.GetMessages(session);
+
+ChatClientAgentSession typedSession = (ChatClientAgentSession)session;
+Console.WriteLine(typedSession.ConversationId);
 
 //Stream the response
 //AgentResponseUpdate? latestReceivedUpdate = null;

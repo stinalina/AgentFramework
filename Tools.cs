@@ -9,6 +9,10 @@ internal static class Tools
   public static string GetWeather([Description("The location to get the weather for.")] string location)
     => $"The weather in {location} is cloudy with a high of 15°C.";
 
+  [Description("The current datetime offset.")]
+  public static string GetDateTime()
+    => DateTimeOffset.Now.ToString();
+
   [Description("Get popular countries for a given continent.")]
   public static string GetCountries([Description("The continent to get the countries for.")] Continents continent)
   {
