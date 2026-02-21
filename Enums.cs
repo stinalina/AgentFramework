@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace AgentFramework;
+﻿namespace AgentFramework;
 
 internal enum Continent
 {
@@ -20,6 +16,9 @@ internal enum AfricaCountries
   Egypt,
   DR_Congo,
   South_Africa,
+  Kenya,
+  Morocco,
+  Tanzania,
 }
 
 internal enum AmericaCountries
@@ -29,15 +28,21 @@ internal enum AmericaCountries
   Mexico,
   Colombia,
   Argentina,
+  Canada,
+  Chile,
+  Peru,
 }
 
 internal enum EuropeCountries
 {
-  Russia,
+  Switzerland,
   Germany,
   United_Kingdom,
   France,
   Italy,
+  Spain,
+  Poland,
+  Netherlands,
 }
 
 internal enum AsiaCountries
@@ -47,6 +52,9 @@ internal enum AsiaCountries
   Indonesia,
   Pakistan,
   Bangladesh,
+  Japan,
+  Thailand,
+  Vietnam,
 }
 
 internal enum OceaniaCountries
@@ -56,4 +64,7 @@ internal enum OceaniaCountries
   New_Zealand,
   Fiji,
   Solomon_Islands,
+  Samoa,
+  Vanuatu,
+  Kiribati,
 }
