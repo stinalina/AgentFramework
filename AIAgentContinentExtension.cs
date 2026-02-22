@@ -8,7 +8,7 @@ public static class AIAgentContinentExtension
 
   extension(AIAgent agent)
   {
-    public async Task StartConversationAsync(string question)
+    public async Task StartConversationAsync(string? initialQuestion = null)
     {
       // Persist and restore later
       //Treat AgentSession as an opaque state object and restore it with the same agent/provider configuration that created it.
@@ -19,17 +19,49 @@ public static class AIAgentContinentExtension
       //ChatClientAgentSession typedSession = (ChatClientAgentSession)session;
       //Console.WriteLine(typedSession.ConversationId);
 
-      //var runOptions = new AgentRunOptions { RunMiddleware = DebugMiddleware };
       AgentRunOptions options = new() //pass run level middleware here
       {
         AllowBackgroundResponses = true,
       };
 
+      Console.WriteLine("Type 'exit' or 'quit' to end the conversation.\n");
+
+      // Process initial question if provided
+      if (!string.IsNullOrEmpty(initialQuestion))
+      {
+        Console.WriteLine($"You: {initialQuestion}");
+        await ProcessQuestionAsync(agent, initialQuestion, options);
+      }
+
+      // Interactive loop
+      while (true)
+      {
+        Console.Write("You: ");
+        string? userInput = Console.ReadLine();
+
+        if (string.IsNullOrWhiteSpace(userInput))
+          continue;
+
+        if (userInput.Equals("exit", StringComparison.OrdinalIgnoreCase) || 
+            userInput.Equals("quit", StringComparison.OrdinalIgnoreCase))
+        {
+          Console.WriteLine("Goodbye!");
+          break;
+        }
+
+        await agent.ProcessQuestionAsync(userInput, options);
+      }
+    }
+
+    private async Task ProcessQuestionAsync(string question, AgentRunOptions options)
+    {
       try
       {
-        Console.WriteLine(question);
+        // Reset continuation token for new question
+        //otherwise: An error occurred: Input messages are not allowed when continuing a background response using a continuation token.
+        options.ContinuationToken = null;
+
         var response = await agent.RunAsync(question, SharedSession, options);
-        //var response = await agent.RunAsync("What country should I vist when I fly to Oceania? Please make a research with wikipedia.", session, options);
         // Continue to poll until the final response is received
         // The initial call may complete immediately (no continuation token) or start a background operation (with continuation token)
         while (response.ContinuationToken is not null)
@@ -40,32 +72,12 @@ public static class AIAgentContinentExtension
           options.ContinuationToken = response.ContinuationToken; //store continuation tokens persistently for operations that may span user sessions
           response = await agent.RunAsync(SharedSession, options);
         }
-        Console.WriteLine(response.Text);
-        //Console.WriteLine("Usage Details: " + JsonSerializer.Serialize(response.Usage));
-        //Console.WriteLine(JsonSerializer.Serialize(response.Messages));
+        Console.WriteLine($"\nAgent: {response.Text}\n");
       }
       catch (Exception ex)
       {
-        Console.WriteLine("An error occurred: " + ex.Message);
+        Console.WriteLine($"An error occurred: {ex.Message}\n");
       }
-
-      //Stream the response; Cant stream when output schmea format erzwungen ist, da die Agenten in diesem Fall die Antwort erst komplett generieren müssen, um sie gegen das Schema zu validieren.
-      //AgentResponseUpdate? latestReceivedUpdate = null;
-      //
-      //Console.WriteLine(question);
-      //await foreach (var update in agent.RunStreamingAsync(question, SharedSession, options))
-      //{
-      //  Console.Write(update);
-      //}
-      //await foreach (var update in agent.RunStreamingAsync("What country should I vist when I fly to Oceania?", session, options))
-      //{
-      //  Console.Write(update.Text);
-
-      //  latestReceivedUpdate = update;
-
-      //  // Simulate an interruption
-      //  break;
-      //}
     }
   }
 }

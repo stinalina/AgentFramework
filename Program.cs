@@ -50,7 +50,7 @@ Env.Load(Path.Combine(AppContext.BaseDirectory, ".env"));
 //Console.WriteLine(await guardedAgent.RunAsync("What is my password?"));
 
 AIAgent agent = await AgentFactory.GetAgent(Continent.Europe);
-await agent.StartConversationAsync("Gebe mir Reisetipps für Italien.");
+await agent.StartConversationAsync("Gebe mir Reisetipps für Kongo.");
 
 // When in-memory chat history storage is used, it's possible to access the chat history
 // that is stored in the session via the provider attached to the agent.
