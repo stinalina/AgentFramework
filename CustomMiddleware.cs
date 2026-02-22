@@ -57,11 +57,19 @@ internal class CustomMiddleware
     Func<FunctionInvocationContext, CancellationToken, ValueTask<object?>> next,
     CancellationToken cancellationToken)
   {
-    Console.WriteLine($"Function Name: {context.Function.Name}");
-    var result = await next(context, cancellationToken);
-    Console.WriteLine($"Function Call Result: {result}");
+    try
+    {
+    Console.WriteLine($"[Function] Invoking: {context.Function.Name}");
 
-    return result;
+      var result = await next(context, cancellationToken);
+      Console.WriteLine($"[Function] Result: {result}");
+      return result;
+    }
+    catch (Exception ex)
+    {
+      Console.WriteLine($"[Function] Error: {ex.Message}");
+      throw;
+    }
   }
 
   //For agents that are built using IChatClient, you might want to intercept calls going from the agent to the IChatClient. In this case,
@@ -111,6 +119,36 @@ internal class CustomMiddleware
     return response;
   }
 
+  // Debug middleware to check if messages are being passed correctly
+  public static async Task<AgentResponse> DebugMessagesMiddleware(
+    IEnumerable<ChatMessage> messages,
+    AgentSession? session,
+    AgentRunOptions? options,
+    AIAgent innerAgent,
+    CancellationToken cancellationToken)
+  {
+    var messageList = messages.ToList();
+    Console.WriteLine($"[DebugMessages] ==== AGENT RUN ====");
+    Console.WriteLine($"[DebugMessages] Message count: {messageList.Count}");
+
+    foreach (var msg in messageList)
+    {
+      Console.WriteLine($"[DebugMessages] Message - Role: {msg.Role}, Text: {msg.Text?.Substring(0, Math.Min(50, msg.Text?.Length ?? 0)) ?? "N/A"}");
+    }
+
+    try
+    {
+      var response = await innerAgent.RunAsync(messageList, session, options, cancellationToken);
+      Console.WriteLine($"[DebugMessages] Response received successfully");
+      return response;
+    }
+    catch (Exception ex)
+    {
+      Console.WriteLine($"[DebugMessages] ERROR: {ex.Message}");
+      throw;
+    }
+  }
+
   // // Run-level middleware: applied to a specific run only
   public static async Task<AgentResponse> DebugMiddleware(
     IEnumerable<ChatMessage> messages,
@@ -123,6 +161,41 @@ internal class CustomMiddleware
     var response = await innerAgent.RunAsync(messages, session, options, cancellationToken);
     Console.WriteLine($"[Debug] Output messages: {response.Messages.Count}");
     return response;
+  }
+
+  // Agent-level debugging middleware for detailed logging
+  public static async Task<AgentResponse> DetailedFunctionDebugMiddleware(
+    IEnumerable<ChatMessage> messages,
+    AgentSession? session,
+    AgentRunOptions? options,
+    AIAgent innerAgent,
+    CancellationToken cancellationToken)
+  {
+    try
+    {
+      Console.WriteLine($"\n[AgentDebug] ==== AGENT RUN START ====");
+      Console.WriteLine($"[AgentDebug] Input messages count: {messages.Count()}");
+
+      var response = await innerAgent.RunAsync(messages, session, options, cancellationToken);
+
+      Console.WriteLine($"[AgentDebug] Output messages count: {response.Messages.Count}");
+      if (response.Messages.Any())
+      {
+        var lastMessage = response.Messages.LastOrDefault();
+        Console.WriteLine($"[AgentDebug] Last message role: {lastMessage?.Role}");
+        Console.WriteLine($"[AgentDebug] Last message text preview: {lastMessage?.Text?.Substring(0, Math.Min(100, lastMessage?.Text?.Length ?? 0)) ?? "N/A"}...");
+      }
+      Console.WriteLine($"[AgentDebug] ==== AGENT RUN END ====\n");
+
+      return response;
+    }
+    catch (Exception ex)
+    {
+      Console.WriteLine($"[AgentDebug] ❌ ERROR: {ex.GetType().Name}: {ex.Message}");
+      Console.WriteLine($"[AgentDebug] Stack Trace: {ex.StackTrace}");
+      Console.WriteLine($"[AgentDebug] ==== AGENT RUN FAILED ====\n");
+      throw;
+    }
   }
 
   // // Guardrail middleware that checks input and can return early without calling the agent

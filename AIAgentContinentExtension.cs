@@ -21,7 +21,7 @@ public static class AIAgentContinentExtension
 
       AgentRunOptions options = new() //pass run level middleware here
       {
-        AllowBackgroundResponses = true,
+        AllowBackgroundResponses = false, // Deaktiviert, um Continuation-Fehler zu vermeiden
       };
 
       Console.WriteLine("Type 'exit' or 'quit' to end the conversation.\n");

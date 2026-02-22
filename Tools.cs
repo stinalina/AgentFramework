@@ -7,6 +7,11 @@ namespace AgentFramework;
 
 internal static class Tools
 {
+  // Static MCP client instances to keep them alive during the application lifetime
+  private static McpClient? _wikipediaMcpClient;
+  private static IList<McpClientTool>? _wikipediaTools;
+  private static readonly object _lockObject = new();
+
   //TODO Tool für Reisewarnungen
 
   [Description("Get the weather for a given location.")]
@@ -38,27 +43,63 @@ internal static class Tools
   [Description("Found information about continent and countries, also get the summary of a Wikipedia article.")]
   public static async Task<IList<McpClientTool>> WikipediaMCPTool()
   {
-    await using var wikipediaMcpClient = await McpClient.CreateAsync(new StdioClientTransport(new ()
+    // Use lock to ensure thread-safe initialization
+    lock (_lockObject)
     {
-      Name = "Wikipedia MCP Server",
-      Command = "docker",
-      Arguments = [
-        "run",
-        "-i",
-        "--rm",
-        "mcp/wikipedia-mcp"
-        ],
-    }));
-
-
-    // found available servers here: https://github.com/modelcontextprotocol/servers
-    // Retrieve the list of tools available on the GitHub server
-    //var mcpTools = await mcpClient.ListToolsAsync().ConfigureAwait(false);
-    var wikipediaMcpTools = await wikipediaMcpClient.ListToolsAsync().ConfigureAwait(false);
-
-    // available tools: https://github.com/Rudra-ravi/wikipedia-mcp?tab=readme-ov-file#available-mcp-tools
-    return wikipediaMcpTools
-      .Where(tool => tool.Name.Contains("search_wikipedia") || tool.Name.Contains("get_summary"))
-      .ToList();
+      if (_wikipediaTools != null)
+      {
+        return _wikipediaTools;
+      }
     }
+
+    try
+    {
+      // Create the MCP client once and keep it alive
+      _wikipediaMcpClient = await McpClient.CreateAsync(new StdioClientTransport(new()
+      {
+        Name = "Wikipedia MCP Server",
+        Command = "docker",
+        Arguments = [
+          "run",
+          "-i",
+          "--rm",
+          "mcp/wikipedia-mcp"
+        ],
+      }));
+
+      // Retrieve the list of tools available on the Wikipedia MCP server
+      var wikipediaMcpTools = await _wikipediaMcpClient.ListToolsAsync().ConfigureAwait(false);
+
+      // Filter for the tools we want
+      // available tools: https://github.com/Rudra-ravi/wikipedia-mcp?tab=readme-ov-file#available-mcp-tools
+      _wikipediaTools = wikipediaMcpTools
+        .Where(tool => tool.Name.Contains("search_wikipedia") || tool.Name.Contains("get_summary"))
+        .ToList();
+
+      return _wikipediaTools;
+    }
+    catch (Exception ex)
+    {
+      Console.WriteLine($"[WikipediaMCP] Error initializing Wikipedia MCP client: {ex.Message}");
+      // Return empty list on error instead of throwing
+      return new List<McpClientTool>();
+    }
+  }
+
+  // Clean up MCP client on application shutdown
+  public static async ValueTask DisposeMcpClientsAsync()
+  {
+    if (_wikipediaMcpClient != null)
+    {
+      try
+      {
+        await _wikipediaMcpClient.DisposeAsync();
+        _wikipediaMcpClient = null;
+      }
+      catch (Exception ex)
+      {
+        Console.WriteLine($"[WikipediaMCP] Error disposing Wikipedia MCP client: {ex.Message}");
+      }
+    }
+  }
 }

@@ -51,7 +51,7 @@ internal static class AgentFactory
      .GetResponsesClient(deploymentName)
      .AsAIAgent(
         instructions,
-        tools: [
+                tools: [
           AIFunctionFactory.Create(Tools.GetCountries),
           AIFunctionFactory.Create(Tools.GetDateTime),
           ..wikipediaTools.Cast<AITool>(),
@@ -67,28 +67,13 @@ internal static class AgentFactory
             options.MaxOutputTokens = 4096;
             options.AllowMultipleToolCalls = true;
             options.ToolMode = ChatToolMode.Auto;
-            options.AllowBackgroundResponses = true;
+            options.AllowBackgroundResponses = false; // Deaktiviert wegen Continuation-Fehler
           })
-          //.Use( //use chatclient middlware
-          //  getResponseFunc: CustomMiddleware.CustomChatClientMiddleware,
-          //  getStreamingResponseFunc: null
-          // )
           .Build()
-        );
-     //.AsBuilder()
-     //.Use(CustomMiddleware.FunctionMiddleware_LogUsedTool)
-     //.Use(runFunc: CustomMiddleware.ExceptionHandlingMiddleware, runStreamingFunc: null)
-     //.Build();
-
-    //var middlewareEnabledAgent = agent //use agent middleware
-    //    .AsBuilder()
-    //        .Use(CustomMiddleware.CustomFunctionCallingMiddleware)
-    //        .Use(runFunc: CustomMiddleware.CustomAgentRunMiddleware, runStreamingFunc: null)
-    //        .Use(runFunc: CustomMiddleware.GuardrailMiddleware, runStreamingFunc: null)
-    //        .Use(runFunc: CustomMiddleware.ResultOverrideMiddleware, runStreamingFunc: null)
-    //        .Use(runFunc: CustomMiddleware.ExceptionHandlingMiddleware, runStreamingFunc: null)
-    //    .Build();
-    // Blocked request — guardrail returns early without calling agent
-    //Console.WriteLine(await guardedAgent.RunAsync("What is my password?"));
+        )
+     .AsBuilder()
+     //.Use(runFunc: CustomMiddleware.DebugMessagesMiddleware, runStreamingFunc: null)
+     .Use(CustomMiddleware.FunctionMiddleware_LogUsedTool)
+     .Build();
   }
 }
