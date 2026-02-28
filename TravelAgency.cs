@@ -1,19 +1,18 @@
-﻿using Azure.AI.OpenAI;
-using Azure.Identity;
-using Microsoft.Agents.AI;
-using Microsoft.Extensions.AI;
-using System;
-using System.Collections.Generic;
-using System.Net;
-using System.Runtime.CompilerServices;
-using System.Text;
+﻿using Azure.AI.Agents.Persistent;
 using Azure.AI.OpenAI;
 using Azure.Identity;
+using Azure.Identity;
 using Microsoft.Agents.AI;
+using Microsoft.Agents.AI;
+using Microsoft.Agents.AI.Workflows;
 using Microsoft.Extensions.AI;
-using OpenAI.Responses;
-using OpenAI.Chat;
+using Microsoft.Extensions.AI;
 using OpenAI.Assistants;
+using OpenAI.Chat;
+using OpenAI.Responses;
+using System;
+using System.Reflection;
+using System.Threading.Tasks;
 
 namespace AgentFramework;
 
@@ -47,6 +46,17 @@ internal class TravelAgency
 
     string instructions = File.ReadAllText(
       Path.Combine(AppContext.BaseDirectory, $"instructions/travel_agency_employee.instructions.txt"));
+
+    //var persistentAgentsClient = new PersistentAgentsClient(endpoint, new AzureCliCredential());
+    //var agentMetadata = await persistentAgentsClient.Administration.CreateAgentAsync(
+    //       model: deploymentName,
+    //       name: "Travel Agency Employee",
+    //       instructions);
+
+    //ArgumentNullException.ThrowIfNull(persistentAgentsClient, nameof(persistentAgentsClient));
+
+    //return await persistentAgentsClient.GetAIAgentAsync(agentMetadata.Value.Id);
+
 
     return new AzureOpenAIClient(new Uri(endpoint), new AzureCliCredential())
      .GetResponsesClient(deploymentName)

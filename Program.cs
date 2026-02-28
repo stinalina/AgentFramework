@@ -1,4 +1,5 @@
 ﻿using AgentFramework;
+using AgentFramework.Extensions;
 using AgentFramework.Workflows;
 using Azure.AI.OpenAI;
 using Azure.Identity;
@@ -51,8 +52,11 @@ Env.Load(Path.Combine(AppContext.BaseDirectory, ".env"));
 //AIAgent agent = await AgentFactory.GetContinentExpert(Continent.Europe);
 //await agent.StartConversationAsync("Gebe mir Reisetipps für Kongo.");
 
-AIAgent travelAgencyEmployee = await TravelAgency.GetEmployeeAsync();
-await travelAgencyEmployee.StartConversationAsync();
+//AIAgent travelAgencyEmployee = await TravelAgency.GetEmployeeAsync();
+//await travelAgencyEmployee.StartConversationAsync();
+
+Workflow workflow = await MyWorkflow.GetWorkflowAsync();
+await workflow.StartWorkflowAsync();
 
 
 //FIX BindExecutor ist eine extension Method, die es nicht gibt...

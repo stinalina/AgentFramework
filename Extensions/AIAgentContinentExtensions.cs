@@ -1,8 +1,8 @@
 ﻿using Microsoft.Agents.AI;
 
-namespace AgentFramework;
+namespace AgentFramework.Extensions;
 
-public static class AIAgentContinentExtension
+public static class AIAgentContinentExtensions
 {
   private static AgentSession? SharedSession;
 
@@ -72,7 +72,7 @@ public static class AIAgentContinentExtension
           options.ContinuationToken = response.ContinuationToken; //store continuation tokens persistently for operations that may span user sessions
           response = await agent.RunAsync(SharedSession, options);
         }
-        Console.WriteLine($"\nAgent: {response.Text}\n");
+        Console.WriteLine($"\nAgent: {response.Text}\n"); //TODO nicht Agent, sondern z.B. "Europe Expert" oder so, je nachdem welcher Agent antwortet
       }
       catch (Exception ex)
       {
