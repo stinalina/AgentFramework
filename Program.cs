@@ -1,19 +1,18 @@
-﻿using DotNetEnv;
-
+﻿using AgentFramework;
+using AgentFramework.Workflows;
 using Azure.AI.OpenAI;
 using Azure.Identity;
+using DotNetEnv;
 using Microsoft.Agents.AI;
+using Microsoft.Agents.AI.Workflows;
 using Microsoft.Extensions.AI;
-using OpenAI.Responses;
-using ModelContextProtocol.Client;
-using OpenAI.Chat;
-
-using OpenAI.Assistants;
-using System.Text.Json;
-using AgentFramework;
 using Microsoft.Extensions.Options;
+using ModelContextProtocol.Client;
+using OpenAI.Assistants;
+using OpenAI.Chat;
+using OpenAI.Responses;
+using System.Text.Json;
 using ChatMessage = Microsoft.Extensions.AI.ChatMessage;
-using AgentFramework.Workflows;
 
 Env.Load(Path.Combine(AppContext.BaseDirectory, ".env"));
 
@@ -49,13 +48,21 @@ Env.Load(Path.Combine(AppContext.BaseDirectory, ".env"));
 // Blocked request — guardrail returns early without calling agent
 //Console.WriteLine(await guardedAgent.RunAsync("What is my password?"));
 
-AIAgent agent = await AgentFactory.GetAgent(Continent.Europe);
-await agent.StartConversationAsync("Gebe mir Reisetipps für Kongo.");
+//AIAgent agent = await AgentFactory.GetContinentExpert(Continent.Europe);
+//await agent.StartConversationAsync("Gebe mir Reisetipps für Kongo.");
+
+AIAgent travelAgencyEmployee = await TravelAgency.GetEmployeeAsync();
+await travelAgencyEmployee.StartConversationAsync();
+
+
+//FIX BindExecutor ist eine extension Method, die es nicht gibt...
+//Func<string, TripInfo> buildTripInfoFunc = s => JsonSerializer.Deserialize<TripInfo>(s) ?? throw new InvalidOperationException("Could not deserialize TripInfo");
+//var uppercase = buildTripInfoFunc.BindExecutor<TripInfo>("TransformTripInfoExecutor");
 
 // When in-memory chat history storage is used, it's possible to access the chat history
 // that is stored in the session via the provider attached to the agent.
-var provider = agent.GetService<InMemoryChatHistoryProvider>();
-List<ChatMessage>? messages = provider?.ToList(); //TODO wie setze ich die session?
+//var provider = agent.GetService<InMemoryChatHistoryProvider>();
+//List<ChatMessage>? messages = provider?.ToList(); //TODO wie setze ich die session?
 //List<ChatMessage>? messages = provider?.GetMessages(session);
 
 

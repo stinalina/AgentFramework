@@ -2,51 +2,51 @@
 using Azure.Identity;
 using Microsoft.Agents.AI;
 using Microsoft.Extensions.AI;
+using System;
+using System.Collections.Generic;
+using System.Net;
+using System.Runtime.CompilerServices;
+using System.Text;
+using Azure.AI.OpenAI;
+using Azure.Identity;
+using Microsoft.Agents.AI;
+using Microsoft.Extensions.AI;
 using OpenAI.Responses;
 using OpenAI.Chat;
 using OpenAI.Assistants;
 
 namespace AgentFramework;
 
-internal static class AgentFactory
+// Signleton. ReiseBüro
+internal class TravelAgency
 {
+  //TODO das global auslagern, damit es nicht in jedem Agenten neu erstellt wird
   private static readonly string endpoint = Environment.GetEnvironmentVariable("AZURE_OPENAI_ENDPOINT")
-     ?? throw new InvalidOperationException("AZURE_OPENAI_ENDPOINT is not set.");
+   ?? throw new InvalidOperationException("AZURE_OPENAI_ENDPOINT is not set.");
 
   private static readonly string deploymentName = Environment.GetEnvironmentVariable("AZURE_OPENAI_DEPLOYMENT_NAME")
     ?? throw new InvalidOperationException("AZURE_OPENAI_DEPLOYMENT_NAME is not set.");
 
-  private static readonly Dictionary<string, AIAgent> ContinentExperts = [];
 
-  public static async Task<AIAgent> GetContinentExpert(Continent continent)
-  {
-    if (ContinentExperts.Values.Count == 0)
-    {
-      Console.WriteLine("Creating Experts...");
-      await CreateAgentExpertsAsync();
-    }
-    return ContinentExperts[continent.ToString()];
-  }
+  private static AIAgent _employee;
 
-  private static async Task CreateAgentExpertsAsync()
+  public static async Task<AIAgent> GetEmployeeAsync()
   {
-    foreach (var continent in Enum.GetValues<Continent>())
+    if (_employee is AIAgent agent)
     {
-      AIAgent agent = await CreateContinentExpertAsync(continent);
-      ContinentExperts.Add(continent.ToString(), agent);
+      return agent;
     }
 
+    _employee = await CreateEmployeeAsync();
+    return _employee;
   }
-  
-  private static async Task<AIAgent> CreateContinentExpertAsync(Continent continent)
+
+  private static async Task<AIAgent> CreateEmployeeAsync()
   {
-    Console.WriteLine($"Creating {continent} Expert...");
+    Console.WriteLine($"Creating Travel Agency Employee...");
 
-    string instructions = File
-      .ReadAllText(Path.Combine(AppContext.BaseDirectory, $"instructions/continent_agent.instructions.txt"))
-      .Replace("<continent>", continent.ToString());
-
-    var wikipediaTools = await Tools.WikipediaMCPTool();
+    string instructions = File.ReadAllText(
+      Path.Combine(AppContext.BaseDirectory, $"instructions/travel_agency_employee.instructions.txt"));
 
     return new AzureOpenAIClient(new Uri(endpoint), new AzureCliCredential())
      .GetResponsesClient(deploymentName)
@@ -55,7 +55,6 @@ internal static class AgentFactory
                 tools: [
           AIFunctionFactory.Create(Tools.GetCountries),
           AIFunctionFactory.Create(Tools.GetDateTime),
-          ..wikipediaTools.Cast<AITool>(),
           ],
         //services: [
         //  new ChatHistoryProvider(chatOptions)
@@ -74,7 +73,6 @@ internal static class AgentFactory
         )
      .AsBuilder()
      //.Use(runFunc: CustomMiddleware.DebugMessagesMiddleware, runStreamingFunc: null)
-     .Use(CustomMiddleware.FunctionMiddleware_LogUsedTool)
      .Build();
   }
 }

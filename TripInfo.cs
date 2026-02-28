@@ -15,4 +15,9 @@ internal class TripInfo
   public int Cost { get; set; }
   public required string recommendedSession { get; set; }
 
+
+  public static TripInfo Transform(string raw)
+  {
+    return JsonSerializer.Deserialize<TripInfo>(raw) ?? throw new InvalidOperationException("Could not deserialize TripInfo");
+  }
 }
