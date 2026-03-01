@@ -49,17 +49,20 @@ internal static class AgentFactory
     var wikipediaTools = await Tools.WikipediaMCPTool();
 
     return new AzureOpenAIClient(new Uri(endpoint), new AzureCliCredential())
-     .GetResponsesClient(deploymentName)
+     .GetChatClient(deploymentName)
      .AsAIAgent(
         instructions,
-                tools: [
+        name: $"{continent} Expert",
+        description: $"An expert in all questions related to {continent}.",
+        tools: [
           AIFunctionFactory.Create(Tools.GetCountries),
           AIFunctionFactory.Create(Tools.GetDateTime),
           ..wikipediaTools.Cast<AITool>(),
-          ],
-        //services: [
-        //  new ChatHistoryProvider(chatOptions)
-        // ]
+          ]
+          //new InMemoryChatHistoryProvider(new InMemoryChatHistoryProviderOptions{
+          //  ChatReducer = new MessageCountingChatReducer(10)
+          //})
+        ,
         clientFactory: (client) => client.AsBuilder()
           .ConfigureOptions(options =>
           {
@@ -72,9 +75,9 @@ internal static class AgentFactory
           })
           .Build()
         )
-     .AsBuilder()
-     //.Use(runFunc: CustomMiddleware.DebugMessagesMiddleware, runStreamingFunc: null)
-     .Use(CustomMiddleware.FunctionMiddleware_LogUsedTool)
-     .Build();
+       .AsBuilder()
+       //.Use(runFunc: CustomMiddleware.DebugMessagesMiddleware, runStreamingFunc: null)
+       .Use(CustomMiddleware.FunctionMiddleware_LogUsedTool)
+       .Build();
   }
 }

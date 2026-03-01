@@ -7,13 +7,7 @@ internal sealed partial class PassInfoExecutor() : Executor(nameof(PassInfoExecu
 {
   protected override RouteBuilder ConfigureRoutes(RouteBuilder routeBuilder)
   {
-    //// Map incoming string messages to the string message handler
-    //routeBuilder.MapInput<string>(HandleAsync);
-
-    //// Map incoming TripInfo objects to the TripInfo handler
-    //routeBuilder.MapInput<TripInfo>(HandleTripInfoAsync);
-
-    return routeBuilder;
+    throw new NotImplementedException();
   }
 
   [MessageHandler]
