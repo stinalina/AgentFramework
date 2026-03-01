@@ -7,7 +7,7 @@ namespace AgentFramework.Workflows;
 internal class WorkflowAgent
 {
   //public static async Task<IList<AIAgent>> GetContinentWorkflowAgent()
-  public static async Task<Workflow> GetContinentWorkflowAgent()
+  public static async Task<AIAgent> GetContinentWorkflowAgent()
 
   {
     AIAgent africaExpert = await AgentFactory.GetContinentExpert(Continent.Africa);
@@ -31,17 +31,17 @@ internal class WorkflowAgent
     // dotnet run | tail -n +20 | dot -Tpng -o workflow.png
     //Console.WriteLine(workflow.ToMermaidString());
 
-    return workflow;
+
     //Console.WriteLine("=== WORKFLOW STRUCTURE ===");
     //Console.WriteLine(workflow.ToDotString());
     //Console.WriteLine("=========================\n");
 
-    //return workflow.AsAgent(
-    //  id: "workflow-agent",
-    //  name: "Continet Expert Handoff Workflow Agent",
-    //  description: "A multi-agent workflow for continent experts handoff",
-    //  checkpointManager: CheckpointManager.CreateInMemory(),
-    //  executionEnvironment: InProcessExecution.Default
-    //);
+    return workflow.AsAgent(
+      id: "workflow-agent",
+      name: "Continet Expert Handoff Workflow Agent",
+      description: "A multi-agent workflow for continent experts handoff",
+      checkpointManager: CheckpointManager.CreateInMemory(),
+      executionEnvironment: InProcessExecution.Default
+    );
   }
 }

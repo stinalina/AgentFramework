@@ -58,58 +58,9 @@ Env.Load(Path.Combine(AppContext.BaseDirectory, ".env"));
 //Workflow workflow = await MyWorkflow.GetWorkflowAsync();
 //await workflow.StartWorkflowAsync();
 
-try
-{
-Workflow workflow = await WorkflowAgent.GetContinentWorkflowAgent();
+AIAgent workflowAgent = await WorkflowAgent.GetContinentWorkflowAgent();
+await workflowAgent.StartWorkflowAgentConversationAsync();
 
-  var messages = new List<ChatMessage>
-    {
-      new(ChatRole.User, "Ich möchte eine Insel besuchen, auf der es warm ist mit Bergen zum Wandern.")
-    };
-
-
-  while (true)
-  {
-    Console.Write("Q: ");
-    string userInput = Console.ReadLine()!;
-    messages.Add(new(ChatRole.User, userInput));
-
-    // Execute workflow and process events
-    StreamingRun run = await InProcessExecution.StreamAsync(workflow, messages);
-    await run.TrySendMessageAsync(new TurnToken(emitEvents: true));
-
-    List<ChatMessage> newMessages = new();
-    string agentName = "";
-
-    await foreach (WorkflowEvent evt in run.WatchStreamAsync().ConfigureAwait(false))
-    {
-      if (evt is AgentResponseUpdateEvent e)
-      {
-        if (agentName != e.ExecutorId)
-        {
-          Console.Write($"\n{e.ExecutorId}: ");
-          agentName = e.ExecutorId;
-        }
-        Console.Write(e.Data); // Keine WriteLine - alles auf einer Zeile
-      }
-      else if (evt is WorkflowOutputEvent outputEvt)
-      {
-        newMessages = (List<ChatMessage>)outputEvt.Data!;
-        Console.WriteLine(); // Nur newline am Ende
-        break;
-      }
-    }
-
-
-    // Add new messages to conversation history
-    messages.AddRange(newMessages.Skip(messages.Count));
-  }
-
-}
-catch (Exception ex)
-{
-  Console.WriteLine($"Error: {ex.Message}\n{ex.StackTrace}");
-}
 
 //FIX BindExecutor ist eine extension Method, die es nicht gibt...
 //Func<string, TripInfo> buildTripInfoFunc = s => JsonSerializer.Deserialize<TripInfo>(s) ?? throw new InvalidOperationException("Could not deserialize TripInfo");
