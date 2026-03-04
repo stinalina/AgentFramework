@@ -1,9 +1,5 @@
 ﻿using Microsoft.Agents.AI;
-using Microsoft.Agents.AI.Workflows;
 using Microsoft.Extensions.AI;
-using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Text.Json;
 
 namespace AgentFramework.Extensions;
@@ -21,12 +17,12 @@ internal static class WorkflowAgentExtensions
         var initalQuestion = "Ich möchte eine Insel besuchen, auf der es warm ist mit Bergen zum Wandern.";
         var messages = new List<ChatMessage> { };
 
-        Console.WriteLine("You: " + initalQuestion);
+        Console.WriteLine("\nYou: " + initalQuestion);
         await workflowAgent.ProcessWorkflowQuestionAsync(messages, initalQuestion, session); 
 
         while (true)
         {
-          Console.Write("You: ");
+          Console.Write("\nYou: ");
           string? userInput = Console.ReadLine();
           if (string.IsNullOrWhiteSpace(userInput))
             continue;
@@ -54,7 +50,6 @@ internal static class WorkflowAgentExtensions
           }
         }
         Console.WriteLine($"Stack Trace: {ex.StackTrace}\n");
-
       }
     }
 
@@ -70,10 +65,10 @@ internal static class WorkflowAgentExtensions
         {
           if (!string.IsNullOrWhiteSpace(message.Text))
           {
-            Console.WriteLine($"{message.AuthorName}: {message.Text}");
+            Console.WriteLine($"\n{message.AuthorName}: {message.Text}");
           }
         }
-        messages.AddRange(response.Messages.Skip(messages.Count));
+        messages.AddRange(response.Messages);
       }
       catch (Exception ex)
       {

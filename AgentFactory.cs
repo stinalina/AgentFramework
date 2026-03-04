@@ -22,7 +22,6 @@ internal static class AgentFactory
   {
     if (ContinentExperts.Values.Count == 0)
     {
-      Console.WriteLine("Creating Experts...");
       await CreateAgentExpertsAsync();
     }
     return ContinentExperts[continent.ToString()];
@@ -35,7 +34,6 @@ internal static class AgentFactory
       AIAgent agent = await CreateContinentExpertAsync(continent);
       ContinentExperts.Add(continent.ToString(), agent);
     }
-
   }
   
   private static async Task<AIAgent> CreateContinentExpertAsync(Continent continent)
@@ -56,7 +54,6 @@ internal static class AgentFactory
         description: $"An expert in all questions related to {continent}.",
         tools: [
           AIFunctionFactory.Create(Tools.GetCountries),
-          AIFunctionFactory.Create(Tools.GetDateTime),
           ..wikipediaTools.Cast<AITool>(),
           ]
           //new InMemoryChatHistoryProvider(new InMemoryChatHistoryProviderOptions{
