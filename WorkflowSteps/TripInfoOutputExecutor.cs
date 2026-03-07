@@ -1,5 +1,6 @@
 ﻿using Microsoft.Agents.AI.Workflows;
-using Microsoft.Extensions.AI;
+using System;
+using System.Collections.Generic;
 using System;
 using System.Collections.Generic;
 using System.Runtime.Intrinsics.Arm;
@@ -8,32 +9,24 @@ using System.Text.RegularExpressions;
 
 namespace AgentFramework.WorkflowSteps;
 
-internal sealed partial class TravelAgencyExecutor() : Executor(nameof(TravelAgencyExecutor))
+internal sealed partial class TripInfoOutputExecutor() : Executor(nameof(TripInfoOutputExecutor))
 {
-  private const string StateKey = "CustomExecutorState";
+  private const string StateKey = "TripInfoOutputState";
 
   private List<string> messages = new();
 
   protected override RouteBuilder ConfigureRoutes(RouteBuilder routeBuilder)
   {
-    routeBuilder.AddHandler<string, string>(HandleAsync); //TODO brauch ich das?
+    routeBuilder.AddHandler<string>(HandleAsync);
 
     return routeBuilder;
   }
 
   [MessageHandler]
-  private async ValueTask<string> HandleAsync(string message, IWorkflowContext context, CancellationToken cancellationToken = default)
+  private async ValueTask HandleAsync(string message, IWorkflowContext context, CancellationToken cancellationToken = default)
   {
-    Console.ForegroundColor = ConsoleColor.DarkMagenta;
-    Console.WriteLine("Willkommen im Reisebüro!");
-    Console.ResetColor();
-
-    // Store the original question in workflow state for later use by JailbreakSyncExecutor
-    await context.QueueStateUpdateAsync("WelcomeMsg", message, cancellationToken);
-    ChatMessage chatMessage = new(ChatRole.Assistant, message);
-    await context.SendMessageAsync(chatMessage, cancellationToken: cancellationToken);
-
-    return message;
+    string msg = "Ihre Reise wurde erfolgreich gebucht.";
+    await context.SendMessageAsync(msg, cancellationToken);
   }
 
   protected override ValueTask OnCheckpointingAsync(IWorkflowContext context, CancellationToken cancellationToken = default)

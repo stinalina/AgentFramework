@@ -14,7 +14,7 @@ namespace AgentFramework.Workflows;
 
 internal class MyWorkflow
 {
-  private static Workflow _instance;
+  private static WorkflowBuilder _instance;
   //TODO ctr mit entsprechenden Agenten
 
   //TravelAgentContact
@@ -30,51 +30,42 @@ internal class MyWorkflow
 
   public static async Task<Workflow> GetWorkflowAsync()
   {
-    if (_instance == null)
-    {
-      var welcomeMsg = new TravelAgencyExecutor();
-      var travelAgencyAgent = await TravelAgency.GetEmployeeAsync();
-
-      //Workflows are created by WorkflowBuilds. What about AgentWorkflowBuilder?
-
-      Workflow workflow = AgentWorkflowBuilder.BuildSequential([travelAgencyAgent]);
-      //AIAgent workflowAgent = workflow.AsAgent(
-      //  id: "workflow-graph",
-      //  name: "Wokflow Graph Agent",
-      //  description: "A multi-agent workflow for a travel agency",
-      //  checkpointManager: null,
-      //  executionEnvironment: InProcessExecution.Default);
-
-      Console.WriteLine(workflow.ToDotString());
-      //To create an image file from the DOT format, you can use GraphViz tools with the following command
-      // dotnet run | tail -n +20 | dot -Tpng -o workflow.png
-      Console.WriteLine(workflow.ToMermaidString());
-
-      //await foreach (var update in workflow..RunStreamingAsync("Guess a number between 1 and 10."))
-      //{
-      //  Console.Write(update);
-
-      //  // Prompt the user for feedback before continuing
-      //  Console.Write("\nYour feedback (higher/lower/correct): ");
-      //  var feedback = Console.ReadLine();
-
-      //  if (feedback?.Equals("correct", StringComparison.OrdinalIgnoreCase) == true)
-      //  {
-      //    Console.WriteLine("Guessed correctly!");
-      //    break;
-      //  }
-      //}
-
-      // Wrap the AIAgent in an AIAgentExecutor for TurnToken pattern support
-      //var travelAgencyExecutor = new AIAgentExecutor("TravelAgencyEmployee", travelAgencyAgent);
-
-      _instance = new WorkflowBuilder(welcomeMsg)
-        .AddEdge(welcomeMsg, travelAgencyAgent)
-        .Build();
-    }
-    return _instance;
+    _instance ??= await CreateWorkflowBuilderAsync();
+    return _instance.Build(); // // Build a fresh workflow for execution
   }
 
+  private static async Task<WorkflowBuilder> CreateWorkflowBuilderAsync()
+  {
+    UserInputExecutor userInput = new();
+    TripInfoOutputExecutor outputMsg = new();
+    //AIAgent travelAgencyAgent = await TravelAgency.GetEmployeeAsync();
+    AIAgent workflowAgent = await WorkflowAgent.GetContinentWorkflowAgent();
+
+    WorkflowBuilder workflowBuilder = new WorkflowBuilder(userInput)
+      .AddEdge(userInput, workflowAgent)
+      .AddEdge(workflowAgent, outputMsg)
+      .WithOutputFrom(outputMsg);
+
+    //await foreach (var update in workflow..RunStreamingAsync("Guess a number between 1 and 10."))
+    //{
+    //  Console.Write(update);
+
+    //  // Prompt the user for feedback before continuing
+    //  Console.Write("\nYour feedback (higher/lower/correct): ");
+    //  var feedback = Console.ReadLine();
+
+    //  if (feedback?.Equals("correct", StringComparison.OrdinalIgnoreCase) == true)
+    //  {
+    //    Console.WriteLine("Guessed correctly!");
+    //    break;
+    //  }
+    //}
+
+    // Wrap the AIAgent in an AIAgentExecutor for TurnToken pattern support
+    //var travelAgencyExecutor = new AIAgentExecutor("TravelAgencyEmployee", travelAgencyAgent);
+  
+    return workflowBuilder;
+  }
   //private async void ListenToEvents()
   //{
   //  await foreach (WorkflowEvent evt in run.WatchStreamAsync())

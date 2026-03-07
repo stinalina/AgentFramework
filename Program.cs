@@ -58,9 +58,13 @@ Env.Load(Path.Combine(AppContext.BaseDirectory, ".env"));
 //Workflow workflow = await MyWorkflow.GetWorkflowAsync();
 //await workflow.StartWorkflowAsync();
 
-AIAgent workflowAgent = await WorkflowAgent.GetContinentWorkflowAgent();
-await workflowAgent.StartWorkflowAgentConversationAsync();
+//AIAgent workflowAgent = await WorkflowAgent.GetContinentWorkflowAgent();
+//await workflowAgent.StartWorkflowAgentConversationAsync();
 
+
+
+Workflow workflow = await MyWorkflow.GetWorkflowAsync();
+await workflow.ExecuteWorkflowAsync();
 
 //FIX BindExecutor ist eine extension Method, die es nicht gibt...
 //Func<string, TripInfo> buildTripInfoFunc = s => JsonSerializer.Deserialize<TripInfo>(s) ?? throw new InvalidOperationException("Could not deserialize TripInfo");
