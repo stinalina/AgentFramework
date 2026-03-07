@@ -6,27 +6,30 @@ using System.Collections.Generic;
 using System.Runtime.Intrinsics.Arm;
 using System.Text;
 using System.Text.RegularExpressions;
+using Microsoft.Extensions.AI;
 
 namespace AgentFramework.WorkflowSteps;
-
-internal sealed partial class TripInfoOutputExecutor() : Executor(nameof(TripInfoOutputExecutor))
+// erwartet ChatMessages und retuned einen string...
+internal sealed partial class TripInfoOutputExecutor() : Executor<List<ChatMessage>, string>(nameof(TripInfoOutputExecutor))
 {
   private const string StateKey = "TripInfoOutputState";
 
   private List<string> messages = new();
 
-  protected override RouteBuilder ConfigureRoutes(RouteBuilder routeBuilder)
-  {
-    routeBuilder.AddHandler<string>(HandleAsync);
+  //protected override RouteBuilder ConfigureRoutes(RouteBuilder routeBuilder)
+  //{
+  //  routeBuilder.AddHandler<string>(HandleAsync);
 
-    return routeBuilder;
-  }
+  //  return routeBuilder;
+  //}
 
   [MessageHandler]
-  private async ValueTask HandleAsync(string message, IWorkflowContext context, CancellationToken cancellationToken = default)
+  public override async ValueTask<string> HandleAsync(List<ChatMessage> message, IWorkflowContext context, CancellationToken cancellationToken = default)
   {
     string msg = "Ihre Reise wurde erfolgreich gebucht.";
+    Console.WriteLine(msg);
     await context.SendMessageAsync(msg, cancellationToken);
+    return msg;
   }
 
   protected override ValueTask OnCheckpointingAsync(IWorkflowContext context, CancellationToken cancellationToken = default)

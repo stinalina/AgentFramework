@@ -75,5 +75,13 @@ internal static class WorkflowAgentExtensions
         Console.WriteLine($"An error occurred: {ex.Message}\n");
       }
     }
+
+    private bool IsReiseVollstaendig(AgentResponse response)
+    {
+      // Beispiel: Prüfe ob Agent eine "Buchung bestätigt"-Nachricht gibt
+      return response.Messages.Any(m =>
+        m.Text?.Contains("vollständig", StringComparison.OrdinalIgnoreCase) == true ||
+        m.Text?.Contains("buchen", StringComparison.OrdinalIgnoreCase) == true);
+    }
   }
 }

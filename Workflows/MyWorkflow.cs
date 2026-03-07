@@ -41,9 +41,11 @@ internal class MyWorkflow
     //AIAgent travelAgencyAgent = await TravelAgency.GetEmployeeAsync();
     AIAgent workflowAgent = await WorkflowAgent.GetContinentWorkflowAgent();
 
+    InteractiveConversationExecutor interactiveLoop = new(workflowAgent);
+
     WorkflowBuilder workflowBuilder = new WorkflowBuilder(userInput)
-      .AddEdge(userInput, workflowAgent)
-      .AddEdge(workflowAgent, outputMsg)
+      .AddEdge(userInput, interactiveLoop)
+      .AddEdge(interactiveLoop, outputMsg)
       .WithOutputFrom(outputMsg);
 
     //await foreach (var update in workflow..RunStreamingAsync("Guess a number between 1 and 10."))

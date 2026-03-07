@@ -16,6 +16,7 @@ namespace AgentFramework.WorkflowSteps;
 /// 1. Sending ChatMessage(s)
 /// 2. Sending a TurnToken to trigger processing
 /// </summary>
+/// // erwartet einen string und retuned einen string (kann auch void sein, da die Ausgabe von diesem Executor nicht weiterverwendet wird)
 internal sealed class UserInputExecutor() : Executor<string, string>("UserInput")
 {
   public override async ValueTask<string> HandleAsync(string message, IWorkflowContext context, CancellationToken cancellationToken = default)
