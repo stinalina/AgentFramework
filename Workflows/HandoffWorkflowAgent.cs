@@ -3,7 +3,7 @@ using Microsoft.Agents.AI.Workflows;
 
 namespace AgentFramework.Workflows;
 
-internal class WorkflowAgent
+internal class HandoffWorkflowAgent
 {
   private static Workflow _instance;
 

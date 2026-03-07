@@ -8,17 +8,16 @@ internal static class WorkflowAgentExtensions
 {
   extension(AIAgent workflowAgent)
   {
-    public async Task StartWorkflowAgentConversationAsync(string? initialQuestion = null)
+    public async Task StartWorkflowAgentConversationAsync(string initialQuestion)
     {
       try
       {
         AgentSession session = await workflowAgent.CreateSessionAsync();
 
-        var initalQuestion = "Ich möchte eine Insel besuchen, auf der es warm ist mit Bergen zum Wandern.";
         var messages = new List<ChatMessage> { };
 
-        Console.WriteLine("\nYou: " + initalQuestion);
-        await workflowAgent.ProcessWorkflowQuestionAsync(messages, initalQuestion, session); 
+        //Console.WriteLine("\nYou: " + initalQuestion);
+        await workflowAgent.ProcessWorkflowQuestionAsync(messages, initialQuestion, session); 
 
         while (true)
         {
@@ -61,6 +60,7 @@ internal static class WorkflowAgentExtensions
 
         AgentResponse response = await workflowAgent.RunAsync(messages, session);
 
+        Console.ForegroundColor = ConsoleColor.Yellow;
         foreach (ChatMessage message in response.Messages)
         {
           if (!string.IsNullOrWhiteSpace(message.Text))
@@ -68,6 +68,8 @@ internal static class WorkflowAgentExtensions
             Console.WriteLine($"\n{message.AuthorName}: {message.Text}");
           }
         }
+        Console.ResetColor();
+
         messages.AddRange(response.Messages);
       }
       catch (Exception ex)

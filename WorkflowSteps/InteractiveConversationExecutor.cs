@@ -30,17 +30,6 @@ internal sealed class InteractiveConversationExecutor : Executor<string, List<Ch
   //  await base.OnInitializingAsync(context, cancellationToken);
   //}
 
-  //protected override RouteBuilder ConfigureRoutes(RouteBuilder routeBuilder)
-  //{
-  //  routeBuilder.AddHandler<string, List<ChatMessage>>(HandleUserInputAsync);
-  //  return routeBuilder;
-  //}
-
-  //public override ValueTask<List<ChatMessage>> HandleAsync(string message, IWorkflowContext context, CancellationToken cancellationToken = default)
-  //{
-  //  throw new NotImplementedException();
-  //}
-
   [MessageHandler]
   public override async ValueTask<List<ChatMessage>> HandleAsync(
     string message,

@@ -1,11 +1,4 @@
 ﻿using Microsoft.Agents.AI.Workflows;
-using System;
-using System.Collections.Generic;
-using System;
-using System.Collections.Generic;
-using System.Runtime.Intrinsics.Arm;
-using System.Text;
-using System.Text.RegularExpressions;
 using Microsoft.Extensions.AI;
 
 namespace AgentFramework.WorkflowSteps;
@@ -16,18 +9,15 @@ internal sealed partial class TripInfoOutputExecutor() : Executor<List<ChatMessa
 
   private List<string> messages = new();
 
-  //protected override RouteBuilder ConfigureRoutes(RouteBuilder routeBuilder)
-  //{
-  //  routeBuilder.AddHandler<string>(HandleAsync);
-
-  //  return routeBuilder;
-  //}
-
   [MessageHandler]
   public override async ValueTask<string> HandleAsync(List<ChatMessage> message, IWorkflowContext context, CancellationToken cancellationToken = default)
   {
-    string msg = "Ihre Reise wurde erfolgreich gebucht.";
-    Console.WriteLine(msg);
+    var msg = "Ihre Reise wurde erfolgreich gebucht.";
+
+    Console.ForegroundColor = ConsoleColor.Green;
+    Console.WriteLine($"[{this.Id}] {msg}");
+    Console.ResetColor();
+
     await context.SendMessageAsync(msg, cancellationToken);
     return msg;
   }

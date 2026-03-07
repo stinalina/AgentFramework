@@ -15,13 +15,13 @@ public static class WorkflowExtensions
     public async Task ExecuteWorkflowAsync()
     {
       Console.ForegroundColor = ConsoleColor.DarkMagenta;
-      Console.WriteLine("Willkommen im Reisebüro! Wie kann ich Ihnen behilflich sein?");
+      Console.WriteLine("Reisebüro Center: Willkommen im Reisebüro! Wie kann ich Ihnen behilflich sein?");
       Console.ResetColor();
 
       // Configure whether to show agent thinking in real-time
       const bool ShowAgentThinking = true;
 
-      Console.WriteLine("User: ");
+      Console.Write("You: ");
       string ? userQuestion = Console.ReadLine();
       if (string.IsNullOrEmpty(userQuestion))
       {
