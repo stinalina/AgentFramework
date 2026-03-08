@@ -42,7 +42,7 @@ internal static class WorkflowAgentExtensions
           messages = await workflowAgent.ProcessWorkflowQuestionAsync(messages, userInput, session);
         }
 
-        Console.WriteLine(JsonSerializer.Serialize(debuggingHistory));
+        Console.WriteLine(JsonSerializer.Serialize(messages));
       } 
       catch (Exception ex)
       {
@@ -62,22 +62,35 @@ internal static class WorkflowAgentExtensions
 
     private async Task<List<ChatMessage>> ProcessWorkflowQuestionAsync(List<ChatMessage> messages, string userInput, AgentSession session)
     {
+      Dictionary<string, List<AgentResponseUpdate>> buffer = [];
       try
       {
-        var lastAgent = messages.LastOrDefault(m => m.Role == ChatRole.Assistant)?.AuthorName ?? string.Empty;
-
         messages.Add(new ChatMessage(ChatRole.User, userInput));
-        debuggingHistory.Add(new ChatMessage(ChatRole.User, userInput));
 
-        Dictionary<string, List<AgentResponseUpdate>> buffer = [];
         await foreach (AgentResponseUpdate update in workflowAgent.RunStreamingAsync(messages, session))
         {
+          if (update.Contents is not null)
+          {
+            foreach (AIContent content in update.Contents)
+            {
+              if (content is FunctionCallContent functionCall &&
+                  functionCall.Name.StartsWith("handoff_to_", StringComparison.OrdinalIgnoreCase))
+              {
+                string reason = functionCall.Arguments?.TryGetValue("reasonForHandoff", out object? reasonValue) == true
+                  ? reasonValue?.ToString() ?? "No reason provided"
+                  : "No reason provided";
+
+                Console.ForegroundColor = ConsoleColor.Cyan;
+                Console.WriteLine($"[Handoff] Reason: {reason}");
+                Console.ResetColor();
+              }
+            }
+          }
+
           if (update.MessageId is null || string.IsNullOrEmpty(update.Text))
           {
-            // skip updates that don't have a message ID or text
             continue;
           }
-          Console.Clear();
 
           if (!buffer.TryGetValue(update.MessageId, out List<AgentResponseUpdate>? value))
           {
@@ -85,18 +98,11 @@ internal static class WorkflowAgentExtensions
             buffer[update.MessageId] = value;
           }
           value.Add(update);
-
-          foreach (var (messageId, segments) in buffer)
-          {
-            string combinedText = string.Concat(segments);
-            Console.WriteLine($"{segments[0].AuthorName}: {combinedText}");
-            Console.WriteLine();
-          }
         }
 
-       AgentResponse response = buffer.Values
-          .SelectMany(segments => segments)
-          .ToAgentResponse();
+        AgentResponse response = buffer.Values
+           .SelectMany(segments => segments)
+           .ToAgentResponse();
 
         var correctedMessages = response.Messages.Select(msg =>
         {
@@ -109,44 +115,20 @@ internal static class WorkflowAgentExtensions
           }
           return msg;
         }).ToList();
+
         response = new AgentResponse(correctedMessages);
 
-        //AgentResponse response = await workflowAgent.RunAsync(messages, session);
-        var currAgent = response.Messages.LastOrDefault(m => m.Role == ChatRole.Assistant)?.AuthorName ?? string.Empty;
-
-        var handoffMessage = response.Messages.FirstOrDefault(m => m.Role == ChatRole.Tool && m.Text?.Contains("Transferred") == true);
-        if (handoffMessage != null && !String.IsNullOrEmpty(lastAgent) && lastAgent != currAgent)
+        Console.ForegroundColor = ConsoleColor.Yellow;
+        foreach (ChatMessage message in response.Messages)
         {
-          // Nur die Handoff-Bestätigung anzeigen
-          Console.WriteLine("HandOff Occured");
-          debuggingHistory.AddRange(response.Messages.Where(m =>
-            m.Role == ChatRole.Assistant && m.Contents?.Any(c => c.GetType().Name.Contains("FunctionCall")) == true ||
-            m.Role == ChatRole.Tool
-          ).ToList());
-
-          messages.AddRange(response.Messages.Where(m =>
-            m.Role == ChatRole.Assistant && m.Contents?.Any(c => c.GetType().Name.Contains("FunctionCall")) == true ||
-            m.Role == ChatRole.Tool
-          ).ToList());
-        }
-        else
-        {
-          debuggingHistory.AddRange(response.Messages);
-
-          Console.ForegroundColor = ConsoleColor.Yellow;
-          //foreach (ChatMessage message in response.Messages)
-          //{
-          //  if (!string.IsNullOrWhiteSpace(message.Text))
-          //  {
-          //    Console.WriteLine($"\n{message.AuthorName}: {message.Text}");
-          //  }
-          //}
-          Console.ResetColor();
-
-          messages.AddRange(response.Messages);
+          if (!string.IsNullOrWhiteSpace(message.Text))
+          {
+            Console.WriteLine($"\n{message.AuthorName}: {message.Text}");
+          }
         }
 
-        //messages.AddRange(response.Messages.Where(x => x.Role == ChatRole.Assistant || x.Role == ChatRole.User));
+        Console.ResetColor();
+        messages.AddRange(response.Messages);
       }
       catch (Exception ex)
       {
