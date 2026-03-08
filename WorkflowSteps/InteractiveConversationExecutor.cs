@@ -12,8 +12,7 @@ namespace AgentFramework.WorkflowSteps;
 internal sealed class InteractiveConversationExecutor : Executor<string, List<ChatMessage>>
 {
   private readonly AIAgent _agent;
-  private AgentSession? _session;
-  private readonly List<ChatMessage> _conversationHistory;
+  private List<ChatMessage> _conversationHistory;
 
   public InteractiveConversationExecutor(AIAgent agent)
     : base(nameof(InteractiveConversationExecutor))
@@ -21,14 +20,6 @@ internal sealed class InteractiveConversationExecutor : Executor<string, List<Ch
     _agent = agent ?? throw new ArgumentNullException(nameof(agent));
     _conversationHistory = new List<ChatMessage>();
   }
-
-  //protected override async ValueTask OnInitializingAsync(
-  //  IWorkflowContext context,
-  //  CancellationToken cancellationToken = default)
-  //{
-  //  _session = await _agent.CreateSessionAsync(cancellationToken: cancellationToken);
-  //  await base.OnInitializingAsync(context, cancellationToken);
-  //}
 
   [MessageHandler]
   public override async ValueTask<List<ChatMessage>> HandleAsync(
@@ -38,54 +29,10 @@ internal sealed class InteractiveConversationExecutor : Executor<string, List<Ch
   {
     try
     {
-      await _agent.StartWorkflowAgentConversationAsync(message);
-      // Erste Frage hinzufügen
-      //_conversationHistory.Add(new ChatMessage(ChatRole.User, initialInput));
-      //Console.WriteLine($"\nYou: {initialInput}");
+      _conversationHistory = await _agent.StartWorkflowAgentConversationAsync(message);
 
-      //// Interaktive Loop für Konversation
-      //while (true)
-      //{
-      //  // Agent antwortet
-      //  AgentResponse response = await _agent.RunAsync(_conversationHistory, _session, cancellationToken: cancellationToken);
-
-      //  foreach (var message in response.Messages)
-      //  {
-      //    if (!string.IsNullOrWhiteSpace(message.Text))
-      //    {
-      //      Console.WriteLine($"\n{message.AuthorName}: {message.Text}");
-      //    }
-      //    _conversationHistory.Add(message);
-      //  }
-
-      //  // User Input für Follow-up Fragen
-      //  Console.Write("\nYou: ");
-      //  string? userInput = Console.ReadLine();
-
-      //  if (string.IsNullOrWhiteSpace(userInput))
-      //    continue;
-
-      //  // Exit-Bedingung
-      //  if (userInput.Equals("exit", StringComparison.OrdinalIgnoreCase) ||
-      //      userInput.Equals("quit", StringComparison.OrdinalIgnoreCase))
-      //  {
-      //    Console.WriteLine("Goodbye!");
-      //    break;
-      //  }
-
-      //  // Check ob die Reise vollständig ist (z.B. über Agent-Response)
-      //  if (IsReiseVollstaendig(response))
-      //  {
-      //    Console.WriteLine("\n✓ Ihre Reiseinformationen sind vollständig!");
-      //    break;
-      //  }
-
-      //  // Neue User-Eingabe zur History hinzufügen
-      //  _conversationHistory.Add(new ChatMessage(ChatRole.User, userInput));
-      //}
-
-      // Konversation als Output weitergeben
       await context.SendMessageAsync(_conversationHistory, cancellationToken: cancellationToken);
+
       return _conversationHistory;
     }
     catch (Exception ex)

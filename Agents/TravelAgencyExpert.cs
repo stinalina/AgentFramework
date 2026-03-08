@@ -14,10 +14,9 @@ using System;
 using System.Reflection;
 using System.Threading.Tasks;
 
-namespace AgentFramework;
+namespace AgentFramework.Agents;
 
-// Signleton. ReiseBüro
-internal class TravelAgency
+internal class TravelAgencyExpert
 {
   //TODO das global auslagern, damit es nicht in jedem Agenten neu erstellt wird
   private static readonly string endpoint = Environment.GetEnvironmentVariable("AZURE_OPENAI_ENDPOINT")
@@ -62,13 +61,7 @@ internal class TravelAgency
      .GetResponsesClient(deploymentName)
      .AsAIAgent(
         instructions,
-                tools: [
-          AIFunctionFactory.Create(Tools.GetCountries),
-          AIFunctionFactory.Create(Tools.GetDateTime),
-          ],
-        //services: [
-        //  new ChatHistoryProvider(chatOptions)
-        // ]
+        tools: [ AIFunctionFactory.Create(Tools.GetCountries) ],
         clientFactory: (client) => client.AsBuilder()
           .ConfigureOptions(options =>
           {
@@ -82,7 +75,7 @@ internal class TravelAgency
           .Build()
         )
      .AsBuilder()
-     //.Use(runFunc: CustomMiddleware.DebugMessagesMiddleware, runStreamingFunc: null)
+     .Use(CustomMiddleware.FunctionMiddleware_LogUsedTool)
      .Build();
   }
 }

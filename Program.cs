@@ -58,10 +58,8 @@ Env.Load(Path.Combine(AppContext.BaseDirectory, ".env"));
 //Workflow workflow = await MyWorkflow.GetWorkflowAsync();
 //await workflow.StartWorkflowAsync();
 
-//AIAgent workflowAgent = await WorkflowAgent.GetContinentWorkflowAgent();
-//await workflowAgent.StartWorkflowAgentConversationAsync();
-
-
+//AIAgent workflowAgent = await HandoffWorkflowAgent.GetContinentWorkflowAgent();
+//await workflowAgent.StartWorkflowAgentConversationAsync("ich möchte nach Afrika", new List<ChatMessage>());
 
 Workflow workflow = await MyWorkflow.GetWorkflowAsync();
 await workflow.ExecuteWorkflowAsync();

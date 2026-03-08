@@ -6,18 +6,17 @@ namespace AgentFramework.Extensions;
 
 internal static class WorkflowAgentExtensions
 {
+  private static readonly List<ChatMessage>  debuggingHistory = new();
+
   extension(AIAgent workflowAgent)
   {
-    public async Task StartWorkflowAgentConversationAsync(string initialQuestion)
+    public async Task<List<ChatMessage>> StartWorkflowAgentConversationAsync(string initialQuestion)
     {
+      var messages = new List<ChatMessage>();
       try
       {
         AgentSession session = await workflowAgent.CreateSessionAsync();
-
-        var messages = new List<ChatMessage> { };
-
-        //Console.WriteLine("\nYou: " + initalQuestion);
-        await workflowAgent.ProcessWorkflowQuestionAsync(messages, initialQuestion, session); 
+        messages = await workflowAgent.ProcessWorkflowQuestionAsync(messages, initialQuestion, session); 
 
         while (true)
         {
@@ -33,11 +32,19 @@ internal static class WorkflowAgentExtensions
             break;
           }
 
-          await workflowAgent.ProcessWorkflowQuestionAsync(messages, userInput, session);
+          if (userInput.Equals("buchen", StringComparison.OrdinalIgnoreCase) ||
+           userInput.Equals("vollständig", StringComparison.OrdinalIgnoreCase))
+          {
+            Console.WriteLine("Ihre Reise wird nun erstellt. Bitte haben Sie einen Moment Geduld.");
+            break;
+          }
+
+          messages = await workflowAgent.ProcessWorkflowQuestionAsync(messages, userInput, session);
         }
 
-        Console.WriteLine(JsonSerializer.Serialize(messages));
-      } catch (Exception ex)
+        Console.WriteLine(JsonSerializer.Serialize(debuggingHistory));
+      } 
+      catch (Exception ex)
       {
         Console.WriteLine($"An error occurred: {ex.Message}");
         if (ex.InnerException != null)
@@ -50,15 +57,27 @@ internal static class WorkflowAgentExtensions
         }
         Console.WriteLine($"Stack Trace: {ex.StackTrace}\n");
       }
+      return messages;
     }
 
-    private async Task ProcessWorkflowQuestionAsync(List<ChatMessage> messages, string userInput, AgentSession session)
+    private async Task<List<ChatMessage>> ProcessWorkflowQuestionAsync(List<ChatMessage> messages, string userInput, AgentSession session)
     {
       try
       {
+        var lastAgent = messages.LastOrDefault(m => m.Role == ChatRole.Assistant)?.AuthorName ?? string.Empty;
+
         messages.Add(new ChatMessage(ChatRole.User, userInput));
+        debuggingHistory.Add(new ChatMessage(ChatRole.User, userInput));
 
         AgentResponse response = await workflowAgent.RunAsync(messages, session);
+        var currAgent = response.Messages.LastOrDefault(m => m.Role == ChatRole.Assistant)?.AuthorName ?? string.Empty;
+
+        if (!String.IsNullOrEmpty(lastAgent) && lastAgent != currAgent)
+        {
+          Console.WriteLine("HandOff Occured");
+        }
+
+        debuggingHistory.AddRange(response.Messages);
 
         Console.ForegroundColor = ConsoleColor.Yellow;
         foreach (ChatMessage message in response.Messages)
@@ -70,20 +89,14 @@ internal static class WorkflowAgentExtensions
         }
         Console.ResetColor();
 
-        messages.AddRange(response.Messages);
+        messages.AddRange(response.Messages.Where(x => x.Role == ChatRole.Assistant || x.Role == ChatRole.User));
       }
       catch (Exception ex)
       {
         Console.WriteLine($"An error occurred: {ex.Message}\n");
       }
-    }
 
-    private bool IsReiseVollstaendig(AgentResponse response)
-    {
-      // Beispiel: Prüfe ob Agent eine "Buchung bestätigt"-Nachricht gibt
-      return response.Messages.Any(m =>
-        m.Text?.Contains("vollständig", StringComparison.OrdinalIgnoreCase) == true ||
-        m.Text?.Contains("buchen", StringComparison.OrdinalIgnoreCase) == true);
+      return messages;
     }
   }
 }

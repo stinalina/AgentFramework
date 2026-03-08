@@ -1,4 +1,5 @@
-﻿using Microsoft.Agents.AI;
+﻿using AgentFramework.Agents;
+using Microsoft.Agents.AI;
 using Microsoft.Agents.AI.Workflows;
 
 namespace AgentFramework.Workflows;
@@ -16,7 +17,10 @@ internal class HandoffWorkflowAgent
       description: "A multi-agent workflow for continent experts handoff",
       checkpointManager: CheckpointManager.CreateInMemory(),
       executionEnvironment: InProcessExecution.Default
-    );
+    )
+    .AsBuilder()
+    .Use(runFunc: CustomMiddleware.FixHandoffRoleMiddleware, runStreamingFunc: null)
+    .Build();
   }
 
   private static async Task<Workflow> CreateWorkflowAsync()
@@ -26,6 +30,8 @@ internal class HandoffWorkflowAgent
     AIAgent asiaExpert = await AgentFactory.GetContinentExpert(Continent.Asia);
     AIAgent europeExpert = await AgentFactory.GetContinentExpert(Continent.Europe);
     AIAgent oceaniaExpert = await AgentFactory.GetContinentExpert(Continent.Oceania);
+
+    //TODO travel Agnecy expert mit einreihen. Dieser ist erste Anlaufstelle.
 
     var allAgents = new List<AIAgent>() { africaExpert, americaExpert, asiaExpert, europeExpert, oceaniaExpert };
 

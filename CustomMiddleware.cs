@@ -19,6 +19,39 @@ internal class CustomMiddleware
   // Shared state container that middleware instances can reference
   private static readonly Dictionary<string, object> SharedState = new() { ["callCount"] = 0 };
 
+  /// <summary>
+  /// Middleware that fixes role assignment after handoff.
+  /// When handoff occurs, agent responses may be incorrectly marked as ChatRole.User instead of ChatRole.Assistant.
+  /// This middleware corrects the role based on AuthorName.
+  /// See: https://github.com/microsoft/agent-framework/pull/4290
+  /// </summary>
+  public static async Task<AgentResponse> FixHandoffRoleMiddleware(
+    IEnumerable<ChatMessage> messages,
+    AgentSession? session,
+    AgentRunOptions? options,
+    AIAgent innerAgent,
+    CancellationToken cancellationToken)
+  {
+    var response = await innerAgent.RunAsync(messages, session, options, cancellationToken).ConfigureAwait(false);
+
+    // Korrigiere die falschen Roles nach Handoff
+    var correctedMessages = response.Messages.Select(msg =>
+    {
+      // Wenn die Message einen AuthorName hat und nicht "User" oder "Assistant" heißt (also ein Agent-Name),
+      // und die Role falsch als User markiert ist, dann korrigiere zu Assistant
+      if (!string.IsNullOrEmpty(msg.AuthorName) &&
+          msg.AuthorName != "User" &&
+          msg.Role == ChatRole.User &&
+          !string.IsNullOrWhiteSpace(msg.Text))
+      {
+        return new ChatMessage(ChatRole.Assistant, msg.Text) { AuthorName = msg.AuthorName };
+      }
+      return msg;
+    }).ToList();
+
+    return new AgentResponse(correctedMessages);
+  }
+
   //example of agent run middleware, that can inspect and/or modify the input and output from the agent run.
   public static async Task<AgentResponse> CustomAgentRunMiddleware( //that will get invoked for each agent run
     IEnumerable<ChatMessage> messages,
@@ -59,7 +92,7 @@ internal class CustomMiddleware
   {
     try
     {
-    Console.WriteLine($"[Function] Invoking: {context.Function.Name}");
+      Console.WriteLine($"[Function] Invoking: {context.Function.Name}");
 
       var result = await next(context, cancellationToken);
       Console.WriteLine($"[Function] Result: {result}");
