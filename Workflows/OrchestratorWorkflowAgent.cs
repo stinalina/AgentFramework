@@ -1,4 +1,5 @@
-﻿using Microsoft.Agents.AI;
+﻿using AgentFramework.Agents;
+using Microsoft.Agents.AI;
 using Microsoft.Agents.AI.Workflows;
 using System;
 using System.Collections.Generic;
@@ -32,12 +33,13 @@ internal class OrchestratorWorkflowAgent
 
     var continentAgents = new List<AIAgent>() { africaExpert, americaExpert, asiaExpert, europeExpert, oceaniaExpert };
 
-    return AgentWorkflowBuilder.CreateGroupChatBuilderWith(agents =>
-        new RoundRobinGroupChatManager(agents)
-        {
-          MaximumIterationCount = 3
-        }
-      )
+    TravelAgencyGroupChatManager manager = new(continentAgents)
+    {
+      MaximumIterationCount = 5
+    };
+
+    return AgentWorkflowBuilder
+      .CreateGroupChatBuilderWith(_ => manager)
       .AddParticipants(continentAgents)
       .Build();
 

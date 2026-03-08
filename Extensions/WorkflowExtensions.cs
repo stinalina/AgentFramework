@@ -4,6 +4,14 @@ using Microsoft.Agents.AI;
 using Microsoft.Agents.AI.Workflows;
 using Microsoft.Extensions.AI;
 using Sprache;
+using System.Text.Json;
+using System.ComponentModel;
+using System.Text.Json;
+using Azure.AI.OpenAI;
+using Azure.Identity;
+using Microsoft.Agents.AI;
+using Microsoft.Agents.AI.Workflows;
+using Microsoft.Extensions.AI;
 
 namespace AgentFramework.Extensions;
 
@@ -120,30 +128,68 @@ public static class WorkflowExtensions
         StreamingRun run = await InProcessExecution.StreamAsync(workflow, messages);
         await run.TrySendMessageAsync(new TurnToken(emitEvents: true));
 
+        string? lastExecutorId = null;
         await foreach (WorkflowEvent evt in run.WatchStreamAsync().ConfigureAwait(false))
         {
-          if (evt is AgentResponseUpdateEvent update)
+          switch (evt)
           {
-            // Process streaming agent responses
-            AgentResponse response = update.AsResponse();
-            foreach (ChatMessage message in response.Messages)
+            case RequestInfoEvent e:
             {
-              //Console.WriteLine($"[{update.ExecutorId}]: {message.Text}");
-            }
-          }
-          else if (evt is WorkflowOutputEvent output)
-          {
-            // Workflow completed
-            var conversationHistory = output.As<List<ChatMessage>>()
-                .Where(x => x.Contents.Any(c => c is TextContent))
-                .ToList();
+              if (e.Request.DataAs<FunctionApprovalRequestContent>() is FunctionApprovalRequestContent approvalRequestContent)
+              {
+                Console.WriteLine();
+                Console.WriteLine($"[APPROVAL REQUIRED] From agent: {e.Request.PortInfo.PortId}");
+                Console.WriteLine($"  Tool: {approvalRequestContent.FunctionCall.Name}");
+                Console.WriteLine($"  Arguments: {JsonSerializer.Serialize(approvalRequestContent.FunctionCall.Arguments)}");
+                Console.WriteLine();
 
-            Console.WriteLine("\n=== Final Conversation ===");
-            foreach (var message in conversationHistory)
-            {
-              Console.WriteLine($"{message.AuthorName}: {message.Text}");
+                // Approve the tool call request
+                Console.WriteLine($"Tool: {approvalRequestContent.FunctionCall.Name} approved");
+                await run.SendResponseAsync(e.Request.CreateResponse(approvalRequestContent.CreateResponse(approved: true)));
+              }
+
+              break;
             }
-            break;
+
+            case AgentResponseUpdateEvent update:
+            {
+              //// Process streaming agent responses
+              //AgentResponse response = update.AsResponse();
+              //foreach (ChatMessage message in response.Messages)
+              //{
+              //  //Console.WriteLine($"[{update.ExecutorId}]: {message.Text}");
+              //}
+              //break;
+              if (update.ExecutorId != lastExecutorId)
+              {
+                if (lastExecutorId is not null)
+                {
+                  Console.WriteLine();
+                }
+
+                Console.WriteLine($"- {update.ExecutorId}: ");
+                lastExecutorId = update.ExecutorId;
+              }
+
+              Console.Write(update.Update.Text);
+
+              break;
+            }
+
+            case WorkflowOutputEvent output:
+            {
+              // Workflow completed
+              var conversationHistory = output.As<List<ChatMessage>>()
+                  .Where(x => x.Contents.Any(c => c is TextContent))
+                  .ToList();
+
+              Console.WriteLine("\n=== Final Conversation ===");
+              foreach (var message in conversationHistory)
+              {
+                Console.WriteLine($"{message.AuthorName}: {message.Text}");
+              }
+              break;
+            }
           }
         }
       }

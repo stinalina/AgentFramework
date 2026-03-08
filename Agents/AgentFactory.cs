@@ -6,7 +6,7 @@ using OpenAI.Responses;
 using OpenAI.Chat;
 using OpenAI.Assistants;
 
-namespace AgentFramework;
+namespace AgentFramework.Agents;
 
 internal static class AgentFactory
 {

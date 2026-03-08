@@ -1,23 +1,16 @@
 ﻿using Azure.AI.Agents.Persistent;
 using Azure.AI.OpenAI;
 using Azure.Identity;
-using Azure.Identity;
-using Microsoft.Agents.AI;
 using Microsoft.Agents.AI;
 using Microsoft.Agents.AI.Workflows;
-using Microsoft.Extensions.AI;
 using Microsoft.Extensions.AI;
 using OpenAI.Assistants;
 using OpenAI.Chat;
 using OpenAI.Responses;
-using System;
-using System.Reflection;
-using System.Threading.Tasks;
 
-namespace AgentFramework;
+namespace AgentFramework.Agents;
 
-// Signleton. ReiseBüro
-internal class TravelAgency
+internal class TravelAgencyExpert
 {
   //TODO das global auslagern, damit es nicht in jedem Agenten neu erstellt wird
   private static readonly string endpoint = Environment.GetEnvironmentVariable("AZURE_OPENAI_ENDPOINT")
@@ -26,21 +19,20 @@ internal class TravelAgency
   private static readonly string deploymentName = Environment.GetEnvironmentVariable("AZURE_OPENAI_DEPLOYMENT_NAME")
     ?? throw new InvalidOperationException("AZURE_OPENAI_DEPLOYMENT_NAME is not set.");
 
-
   private static AIAgent _employee;
 
-  public static async Task<AIAgent> GetEmployeeAsync()
+  public static async Task<AIAgent> GetExpertAsync()
   {
     if (_employee is AIAgent agent)
     {
       return agent;
     }
 
-    _employee = await CreateEmployeeAsync();
+    _employee = await CreateExpertAsync();
     return _employee;
   }
 
-  private static async Task<AIAgent> CreateEmployeeAsync()
+  private static async Task<AIAgent> CreateExpertAsync()
   {
     Console.WriteLine($"Creating Travel Agency Employee...");
 
@@ -62,13 +54,7 @@ internal class TravelAgency
      .GetResponsesClient(deploymentName)
      .AsAIAgent(
         instructions,
-                tools: [
-          AIFunctionFactory.Create(Tools.GetCountries),
-          AIFunctionFactory.Create(Tools.GetDateTime),
-          ],
-        //services: [
-        //  new ChatHistoryProvider(chatOptions)
-        // ]
+        tools: [ AIFunctionFactory.Create(Tools.GetCountries) ],
         clientFactory: (client) => client.AsBuilder()
           .ConfigureOptions(options =>
           {
@@ -82,7 +68,7 @@ internal class TravelAgency
           .Build()
         )
      .AsBuilder()
-     //.Use(runFunc: CustomMiddleware.DebugMessagesMiddleware, runStreamingFunc: null)
+     .Use(CustomMiddleware.FunctionMiddleware_LogUsedTool)
      .Build();
   }
 }
