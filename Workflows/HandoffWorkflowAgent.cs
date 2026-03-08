@@ -19,7 +19,7 @@ internal class HandoffWorkflowAgent
       executionEnvironment: InProcessExecution.Default
     )
     .AsBuilder()
-    .Use(runFunc: CustomMiddleware.FixHandoffRoleMiddleware, runStreamingFunc: null)
+    //.Use(runFunc: CustomMiddleware.FixHandoffRoleMiddleware, runStreamingFunc: null)
     .Build();
   }
 

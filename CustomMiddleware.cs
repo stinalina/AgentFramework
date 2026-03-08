@@ -32,24 +32,37 @@ internal class CustomMiddleware
     AIAgent innerAgent,
     CancellationToken cancellationToken)
   {
-    var response = await innerAgent.RunAsync(messages, session, options, cancellationToken).ConfigureAwait(false);
-
-    // Korrigiere die falschen Roles nach Handoff
-    var correctedMessages = response.Messages.Select(msg =>
+    try
     {
-      // Wenn die Message einen AuthorName hat und nicht "User" oder "Assistant" heißt (also ein Agent-Name),
-      // und die Role falsch als User markiert ist, dann korrigiere zu Assistant
-      if (!string.IsNullOrEmpty(msg.AuthorName) &&
-          msg.AuthorName != "User" &&
-          msg.Role == ChatRole.User &&
-          !string.IsNullOrWhiteSpace(msg.Text))
+      if (cancellationToken.IsCancellationRequested)
       {
-        return new ChatMessage(ChatRole.Assistant, msg.Text) { AuthorName = msg.AuthorName };
+        throw new OperationCanceledException("Operation was cancled");
       }
-      return msg;
-    }).ToList();
 
-    return new AgentResponse(correctedMessages);
+      var response = await innerAgent.RunAsync(messages, session, options, cancellationToken).ConfigureAwait(false);
+
+      // Korrigiere die falschen Roles nach Handoff
+      var correctedMessages = response.Messages.Select(msg =>
+      {
+        // Wenn die Message einen AuthorName hat und nicht "User" oder "Assistant" heißt (also ein Agent-Name),
+        // und die Role falsch als User markiert ist, dann korrigiere zu Assistant
+        if (!string.IsNullOrEmpty(msg.AuthorName) &&
+            msg.AuthorName != "User" &&
+            msg.Role == ChatRole.User &&
+            !string.IsNullOrWhiteSpace(msg.Text))
+        {
+          return new ChatMessage(ChatRole.Assistant, msg.Text) { AuthorName = msg.AuthorName };
+        }
+        return msg;
+      }).ToList();
+
+      return new AgentResponse(correctedMessages);
+    }
+    catch (Exception ex)
+    {
+      Console.WriteLine($"[FixHandoffRoleMiddleware] Error: {ex.Message}");
+      throw;
+    }
   }
 
   //example of agent run middleware, that can inspect and/or modify the input and output from the agent run.
