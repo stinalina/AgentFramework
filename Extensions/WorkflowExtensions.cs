@@ -110,5 +110,56 @@ public static class WorkflowExtensions
       //  }
       //}
     }
+
+    public async Task RunGroupChatAsync(string initialQuestion)
+    {
+      try
+      {
+        var messages = new List<ChatMessage> { new(ChatRole.User, initialQuestion) };
+
+        StreamingRun run = await InProcessExecution.StreamAsync(workflow, messages);
+        await run.TrySendMessageAsync(new TurnToken(emitEvents: true));
+
+        await foreach (WorkflowEvent evt in run.WatchStreamAsync().ConfigureAwait(false))
+        {
+          if (evt is AgentResponseUpdateEvent update)
+          {
+            // Process streaming agent responses
+            AgentResponse response = update.AsResponse();
+            foreach (ChatMessage message in response.Messages)
+            {
+              //Console.WriteLine($"[{update.ExecutorId}]: {message.Text}");
+            }
+          }
+          else if (evt is WorkflowOutputEvent output)
+          {
+            // Workflow completed
+            var conversationHistory = output.As<List<ChatMessage>>()
+                .Where(x => x.Contents.Any(c => c is TextContent))
+                .ToList();
+
+            Console.WriteLine("\n=== Final Conversation ===");
+            foreach (var message in conversationHistory)
+            {
+              Console.WriteLine($"{message.AuthorName}: {message.Text}");
+            }
+            break;
+          }
+        }
+      }
+      catch (Exception ex)
+      {
+        Console.WriteLine($"An error occurred: {ex.Message}");
+        if (ex.InnerException != null)
+        {
+          Console.WriteLine($"Inner Exception: {ex.InnerException.Message}");
+          if (ex.InnerException.InnerException != null)
+          {
+            Console.WriteLine($"Inner Inner Exception: {ex.InnerException.InnerException.Message}");
+          }
+        }
+        Console.WriteLine($"Stack Trace: {ex.StackTrace}\n");
+      }
+    }
   }
 }
