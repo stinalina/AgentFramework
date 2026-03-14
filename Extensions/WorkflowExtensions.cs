@@ -52,13 +52,12 @@ public static class WorkflowExtensions
               {
                 if (responseUpdate.AuthorName != lastAuthorName)
                 {
+                  lastAuthorName = responseUpdate.AuthorName;
                   if (lastAuthorName is not null)
                   {
                     Console.WriteLine();
+                    Console.WriteLine($"{responseUpdate.AuthorName}: ");
                   }
-
-                  Console.WriteLine($"{responseUpdate.AuthorName}: ");
-                    lastAuthorName = responseUpdate.AuthorName;
                 }
                 //Console.Write(responseUpdate.AuthorName + ": ");
                 //if (responseUpdate.RawRepresentation is ExecutorCompletedEvent completedEvent)

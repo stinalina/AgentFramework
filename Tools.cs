@@ -12,7 +12,7 @@ internal static class Tools
   private static IList<McpClientTool>? _wikipediaTools;
   private static readonly object _lockObject = new();
 
-    [Description("Get popular countries for a given continent.")]
+  [Description("Get popular countries for a given continent.")]
   public static string GetCountries([Description("The continent to get the countries for.")] Continent continent)
   {
     return continent switch
