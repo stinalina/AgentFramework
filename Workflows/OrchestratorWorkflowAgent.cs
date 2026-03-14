@@ -6,10 +6,10 @@ namespace AgentFramework.Workflows;
 
 internal class OrchestratorWorkflowAgent
 {
-  public static async Task<Workflow> CreateWorkflowAsync()
+  public static async Task<Workflow> CreateWorkflowAsync(string endpoint, string deploymentName)
   {
-    AIAgent handOffWorkflowAsAgent = await HandoffWorkflowAgent.GetContinentWorkflowAgentAsync();
-    AIAgent bookingAgent = await BookingExpert.GetAgentAsync();
+    AIAgent handOffWorkflowAsAgent = await HandoffWorkflowAgent.GetContinentWorkflowAgentAsync(endpoint, deploymentName);
+    AIAgent bookingAgent = await BookingExpert.GetAgentAsync(endpoint, deploymentName);
 
     return AgentWorkflowBuilder
       .CreateGroupChatBuilderWith(participants => new TravelAgencyGroupChatManager(participants)

@@ -7,28 +7,22 @@ using Microsoft.Extensions.AI;
 using OpenAI.Assistants;
 using OpenAI.Chat;
 using OpenAI.Responses;
+using System.Runtime.CompilerServices;
 
 namespace AgentFramework.Agents;
 
 internal class BookingExpert
 {
-  //TODO das global auslagern, damit es nicht in jedem Agenten neu erstellt wird
-  private static readonly string endpoint = Environment.GetEnvironmentVariable("AZURE_OPENAI_ENDPOINT")
-   ?? throw new InvalidOperationException("AZURE_OPENAI_ENDPOINT is not set.");
-
-  private static readonly string deploymentName = Environment.GetEnvironmentVariable("AZURE_OPENAI_DEPLOYMENT_NAME")
-    ?? throw new InvalidOperationException("AZURE_OPENAI_DEPLOYMENT_NAME is not set.");
-
   private static AIAgent _agent;
+  private static string _endpoint;
+  private static string _deploymentName;
 
-  public static async Task<AIAgent> GetAgentAsync()
+  public static async Task<AIAgent> GetAgentAsync(string endpoint, string deploymentName)
   {
-    if (_agent is AIAgent agent)
-    {
-      return agent;
-    }
+    _endpoint = endpoint;
+    _deploymentName = deploymentName;
 
-    _agent = await CreateAgentAsync();
+    _agent ??= await CreateAgentAsync();
     return _agent;
   }
 
@@ -50,8 +44,8 @@ internal class BookingExpert
     //return await persistentAgentsClient.GetAIAgentAsync(agentMetadata.Value.Id);
 
 
-    return new AzureOpenAIClient(new Uri(endpoint), new AzureCliCredential())
-     .GetChatClient(deploymentName) // ← Chat Completions API statt Responses API to avaoid 404
+    return new AzureOpenAIClient(new Uri(_endpoint), new AzureCliCredential())
+     .GetChatClient(_deploymentName) // ← Chat Completions API statt Responses API to avaoid 404
      .AsAIAgent(
         instructions,
         name: "Reisebüroangestellter 2",

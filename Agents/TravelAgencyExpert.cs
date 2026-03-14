@@ -12,23 +12,15 @@ namespace AgentFramework.Agents;
 
 internal class TravelAgencyExpert
 {
-  //TODO das global auslagern, damit es nicht in jedem Agenten neu erstellt wird
-  private static readonly string endpoint = Environment.GetEnvironmentVariable("AZURE_OPENAI_ENDPOINT")
-   ?? throw new InvalidOperationException("AZURE_OPENAI_ENDPOINT is not set.");
-
-  private static readonly string deploymentName = Environment.GetEnvironmentVariable("AZURE_OPENAI_DEPLOYMENT_NAME")
-    ?? throw new InvalidOperationException("AZURE_OPENAI_DEPLOYMENT_NAME is not set.");
-
   private static AIAgent _employee;
+  private static string _endpoint;
+  private static string _deploymentName;
 
-  public static async Task<AIAgent> GetExpertAsync()
+  public static async Task<AIAgent> GetExpertAsync(string endpoint, string deploymentName)
   {
-    if (_employee is AIAgent agent)
-    {
-      return agent;
-    }
-
-    _employee = await CreateExpertAsync();
+    _endpoint = endpoint;
+    _deploymentName = deploymentName;
+    _employee ??= await CreateExpertAsync();
     return _employee;
   }
 
@@ -50,8 +42,8 @@ internal class TravelAgencyExpert
     //return await persistentAgentsClient.GetAIAgentAsync(agentMetadata.Value.Id);
 
 
-    return new AzureOpenAIClient(new Uri(endpoint), new AzureCliCredential())
-     .GetChatClient(deploymentName) // ← Chat Completions API statt Responses API to avaoid 404
+    return new AzureOpenAIClient(new Uri(_endpoint), new AzureCliCredential())
+     .GetChatClient(_deploymentName) // ← Chat Completions API statt Responses API to avaoid 404
      .AsAIAgent(
         instructions,
         name: "Reisebüroangestellter 1",

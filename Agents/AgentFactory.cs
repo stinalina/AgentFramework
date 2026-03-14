@@ -10,30 +10,23 @@ namespace AgentFramework.Agents;
 
 internal static class AgentFactory
 {
-  private static readonly string endpoint = Environment.GetEnvironmentVariable("AZURE_OPENAI_ENDPOINT")
-     ?? throw new InvalidOperationException("AZURE_OPENAI_ENDPOINT is not set.");
-
-  private static readonly string deploymentName = Environment.GetEnvironmentVariable("AZURE_OPENAI_DEPLOYMENT_NAME")
-    ?? throw new InvalidOperationException("AZURE_OPENAI_DEPLOYMENT_NAME is not set.");
+  private static string _endpoint;
+  private static string _deploymentName;
 
   private static readonly Dictionary<string, AIAgent> ContinentExperts = [];
 
-  public static async Task<AIAgent> GetContinentExpert(Continent continent)
+  public static async Task<Dictionary<string, AIAgent>> CreateAgentExpertsAsync(string endpoint, string deploymentName)
   {
-    if (ContinentExperts.Values.Count == 0)
-    {
-      await CreateAgentExpertsAsync();
-    }
-    return ContinentExperts[continent.ToString()];
-  }
+    _endpoint = endpoint;
+    _deploymentName = deploymentName;
 
-  private static async Task CreateAgentExpertsAsync()
-  {
     foreach (var continent in Enum.GetValues<Continent>())
     {
       AIAgent agent = await CreateContinentExpertAsync(continent);
       ContinentExperts.Add(continent.ToString(), agent);
     }
+
+    return ContinentExperts;
   }
   
   private static async Task<AIAgent> CreateContinentExpertAsync(Continent continent)
@@ -46,8 +39,8 @@ internal static class AgentFactory
 
     var wikipediaTools = await Tools.WikipediaMCPTool();
 
-    return new AzureOpenAIClient(new Uri(endpoint), new AzureCliCredential())
-     .GetChatClient(deploymentName)
+    return new AzureOpenAIClient(new Uri(_endpoint), new AzureCliCredential())
+     .GetChatClient(_deploymentName)
      .AsAIAgent(
         instructions,
         name: $"{continent} Expert",
