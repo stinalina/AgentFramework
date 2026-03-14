@@ -7,10 +7,12 @@ namespace AgentFramework.Agents;
 internal sealed class TravelAgencyGroupChatManager : GroupChatManager
 {
   private readonly IReadOnlyList<AIAgent> _agents;
+  private readonly AIAgent _expert;
 
-  public TravelAgencyGroupChatManager(IReadOnlyList<AIAgent> agents)
+  public TravelAgencyGroupChatManager(IReadOnlyList<AIAgent> agents, AIAgent expert)
   {
     this._agents = agents;
+    this._expert = expert;
   }
 
   protected override ValueTask<AIAgent> SelectNextAgentAsync(IReadOnlyList<ChatMessage> history, CancellationToken cancellationToken = default)
@@ -20,8 +22,13 @@ internal sealed class TravelAgencyGroupChatManager : GroupChatManager
       throw new InvalidOperationException("Conversation is empty; cannot select next speaker.");
     }
 
+    //if (history.Count == 1)
+    //{
+    //  return new ValueTask<AIAgent>(this._expert);
+    //}
+
     //TODO check continent and then select the right agent based on that.
-    AIAgent continentSpecialist = this._agents.First(a => a.Name == "DevOpsEngineer"); //name: $"{continent} Expert",
+    AIAgent continentSpecialist = this._agents[0];//.First(a => a.Name == "DevOpsEngineer"); //name: $"{continent} Expert",
     return new ValueTask<AIAgent>(continentSpecialist);
   }
 

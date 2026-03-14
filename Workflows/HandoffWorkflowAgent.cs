@@ -8,7 +8,7 @@ internal class HandoffWorkflowAgent
 {
   private static Workflow _instance;
 
-  public static async Task<AIAgent> GetContinentWorkflowAgent()
+  public static async Task<AIAgent> GetContinentWorkflowAgentAsync()
   {
     _instance ??= await CreateWorkflowAsync();
     return _instance.AsAgent(

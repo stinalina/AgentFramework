@@ -19,7 +19,7 @@ internal class MyWorkflow
   {
     UserInputExecutor userInput = new();
     TripInfoOutputExecutor outputMsg = new();
-    AIAgent workflowAgent = await HandoffWorkflowAgent.GetContinentWorkflowAgent();
+    AIAgent workflowAgent = await HandoffWorkflowAgent.GetContinentWorkflowAgentAsync();
 
     InteractiveConversationExecutor interactiveLoop = new(workflowAgent);
 

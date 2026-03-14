@@ -25,22 +25,25 @@ internal class OrchestratorWorkflowAgent
 
   public static async Task<Workflow> CreateWorkflowAsync()
   {
-    AIAgent africaExpert = await AgentFactory.GetContinentExpert(Continent.Africa);
-    AIAgent americaExpert = await AgentFactory.GetContinentExpert(Continent.America);
-    AIAgent asiaExpert = await AgentFactory.GetContinentExpert(Continent.Asia);
-    AIAgent europeExpert = await AgentFactory.GetContinentExpert(Continent.Europe);
-    AIAgent oceaniaExpert = await AgentFactory.GetContinentExpert(Continent.Oceania);
+    //AIAgent africaExpert = await AgentFactory.GetContinentExpert(Continent.Africa);
+    //AIAgent americaExpert = await AgentFactory.GetContinentExpert(Continent.America);
+    //AIAgent asiaExpert = await AgentFactory.GetContinentExpert(Continent.Asia);
+    //AIAgent europeExpert = await AgentFactory.GetContinentExpert(Continent.Europe);
+    //AIAgent oceaniaExpert = await AgentFactory.GetContinentExpert(Continent.Oceania);
 
-    var continentAgents = new List<AIAgent>() { africaExpert, americaExpert, asiaExpert, europeExpert, oceaniaExpert };
+    //var continentAgents = new List<AIAgent>() { africaExpert, americaExpert, asiaExpert, europeExpert, oceaniaExpert };
+    AIAgent travelAgencyExpert = await TravelAgencyExpert.GetExpertAsync();
 
-    TravelAgencyGroupChatManager manager = new(continentAgents)
+    AIAgent handOffWorkflowAsAgent = await HandoffWorkflowAgent.GetContinentWorkflowAgentAsync();
+
+    TravelAgencyGroupChatManager manager = new(new List<AIAgent>() { handOffWorkflowAsAgent }, travelAgencyExpert)
     {
-      MaximumIterationCount = 5
+      MaximumIterationCount = 3
     };
 
     return AgentWorkflowBuilder
       .CreateGroupChatBuilderWith(_ => manager)
-      .AddParticipants(continentAgents)
+      .AddParticipants(handOffWorkflowAsAgent)
       .Build();
 
 
