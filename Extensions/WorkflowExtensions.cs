@@ -1,13 +1,11 @@
 ﻿using Microsoft.Agents.AI;
 using Microsoft.Agents.AI.Workflows;
 using Microsoft.Extensions.AI;
-using Sprache;
 
 namespace AgentFramework.Extensions;
 
 public static class WorkflowExtensions
 {
-
   extension(Workflow workflow)
   {
     public async Task ExecuteWorkflowAsync()
@@ -39,7 +37,6 @@ public static class WorkflowExtensions
         StreamingRun run = await InProcessExecution.StreamAsync(workflow, messages);
         await run.TrySendMessageAsync(new TurnToken(emitEvents: true));
 
-        string? lastExecutorId = null;
         string? lastAuthorName = null;
         await foreach (WorkflowEvent evt in run.WatchStreamAsync().ConfigureAwait(false))
         {
@@ -51,18 +48,7 @@ public static class WorkflowExtensions
 
             case AgentResponseUpdateEvent update:
             {
-              if (update.ExecutorId != lastExecutorId) // inside orchestrator Agent
-              {
-                if (lastExecutorId is not null)
-                {
-                  Console.WriteLine();
-                }
-
-                Console.WriteLine($"- {update.ExecutorId}: ");
-                lastExecutorId = update.ExecutorId;
-              }
-
-              if (update.Data is AgentResponseUpdate responseUpdate) // inside HandoffAgent
+              if (update.Data is AgentResponseUpdate responseUpdate)
               {
                 if (responseUpdate.AuthorName != lastAuthorName)
                 {
@@ -82,11 +68,7 @@ public static class WorkflowExtensions
               }
 
               Console.Write(update.Update.Text);
-                //Console.ForegroundColor = ConsoleColor.DarkYellow;
-                ////          Console.Write(((AgentResponseUpdateEvent)evt).Update.Text);
-                ////          Console.ResetColor();
-
-                break;
+              break;
             }
 
             case WorkflowOutputEvent output:
@@ -106,15 +88,6 @@ public static class WorkflowExtensions
       catch (Exception ex)
       {
         Console.WriteLine($"An error occurred: {ex.Message}");
-        if (ex.InnerException != null)
-        {
-          Console.WriteLine($"Inner Exception: {ex.InnerException.Message}");
-          if (ex.InnerException.InnerException != null)
-          {
-            Console.WriteLine($"Inner Inner Exception: {ex.InnerException.InnerException.Message}");
-          }
-        }
-        Console.WriteLine($"Stack Trace: {ex.StackTrace}\n");
       }
     }
   }

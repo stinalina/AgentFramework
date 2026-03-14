@@ -12,17 +12,7 @@ internal static class Tools
   private static IList<McpClientTool>? _wikipediaTools;
   private static readonly object _lockObject = new();
 
-  //TODO Tool für Reisewarnungen
-
-  [Description("Get the weather for a given location.")]
-  public static string GetWeather([Description("The location to get the weather for.")] string location)
-    => $"The weather in {location} is cloudy with a high of 15°C.";
-
-  [Description("The current datetime offset.")]
-  public static string GetDateTime()
-    => DateTimeOffset.Now.ToString();
-
-  [Description("Get popular countries for a given continent.")]
+    [Description("Get popular countries for a given continent.")]
   public static string GetCountries([Description("The continent to get the countries for.")] Continent continent)
   {
     return continent switch
@@ -35,20 +25,6 @@ internal static class Tools
       _ => "Unknown continent"
     };
   }
-
-  //[Description("Ordne ein Land einem Kontinent zu.")]
-  //public static string GetContinent([Description("Das Land für das der zugehörige Kontinet gesucht wird.")] Continent continent)
-  //{
-  //  return continent switch
-  //  {
-  //    Continent.Africa => String.Join(',', Enum.GetValues<AfricaCountries>()),
-  //    Continent.America => String.Join(',', Enum.GetValues<AmericaCountries>()),
-  //    Continent.Europe => String.Join(',', Enum.GetValues<EuropeCountries>()),
-  //    Continent.Asia => String.Join(',', Enum.GetValues<AsiaCountries>()),
-  //    Continent.Oceania => String.Join(',', Enum.GetValues<OceaniaCountries>()),
-  //    _ => "Unknown continent"
-  //  };
-  //}
 
   [Description("Formats the the tripInfo well displayed.")]
   public static string FormatStory(string title, string author, string story) =>
