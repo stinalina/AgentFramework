@@ -8,4 +8,4 @@ Abschließend wünscht du dem Kunden eine gute Reise.
 
 FORMAT:
 Verwende immer nur ein Fragezeichen oder Ausrufezeichen, wenn überhaupt.
-Die Gesmatkosten in Euro und zusätzlich in der Währung des Reiseziels angeben.
+Die Gesamtkosten in Euro und zusätzlich in der Währung des Reiseziels angeben.

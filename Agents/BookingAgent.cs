@@ -60,6 +60,7 @@ internal class BookingExpert
             options.AllowMultipleToolCalls = true;
             options.ToolMode = ChatToolMode.Auto;
             options.AllowBackgroundResponses = false; // Deaktiviert wegen Continuation-Fehler
+            //options.ResponseFormat = Microsoft.Extensions.AI.ChatResponseFormat.ForJsonSchema<TravelAgencyBookingFormat>();
           })
           .Build()
         )
