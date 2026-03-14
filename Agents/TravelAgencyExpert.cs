@@ -51,10 +51,12 @@ internal class TravelAgencyExpert
 
 
     return new AzureOpenAIClient(new Uri(endpoint), new AzureCliCredential())
-     .GetResponsesClient(deploymentName)
+     .GetChatClient(deploymentName) // ← Chat Completions API statt Responses API to avaoid 404
      .AsAIAgent(
         instructions,
-        tools: [ AIFunctionFactory.Create(Tools.GetCountries) ],
+        name: "Reisebüroangestellter",
+        description: "Erster Ansprechpartner im Reisebüro",
+        //tools: [ AIFunctionFactory.Create(Tools.GetCountries) ],
         clientFactory: (client) => client.AsBuilder()
           .ConfigureOptions(options =>
           {
@@ -68,7 +70,7 @@ internal class TravelAgencyExpert
           .Build()
         )
      .AsBuilder()
-     .Use(CustomMiddleware.FunctionMiddleware_LogUsedTool)
+     //.Use(CustomMiddleware.FunctionMiddleware_LogUsedTool)
      .Build();
   }
 }

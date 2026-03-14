@@ -16,7 +16,7 @@ internal class OrchestratorWorkflowAgent
   //  _instance ??= await CreateWorkflowAsync();
   //  return _instance.AsAgent(
   //    id: "workflow-agent",
-  //    name: "Continet Expert Handoff Workflow Agent",
+  //    name: "Continent Expert Handoff Workflow Agent",
   //    description: "A multi-agent workflow for continent experts handoff",
   //    checkpointManager: CheckpointManager.CreateInMemory(),
   //    executionEnvironment: InProcessExecution.Default

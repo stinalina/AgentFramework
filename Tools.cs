@@ -36,6 +36,20 @@ internal static class Tools
     };
   }
 
+  //[Description("Ordne ein Land einem Kontinent zu.")]
+  //public static string GetContinent([Description("Das Land für das der zugehörige Kontinet gesucht wird.")] Continent continent)
+  //{
+  //  return continent switch
+  //  {
+  //    Continent.Africa => String.Join(',', Enum.GetValues<AfricaCountries>()),
+  //    Continent.America => String.Join(',', Enum.GetValues<AmericaCountries>()),
+  //    Continent.Europe => String.Join(',', Enum.GetValues<EuropeCountries>()),
+  //    Continent.Asia => String.Join(',', Enum.GetValues<AsiaCountries>()),
+  //    Continent.Oceania => String.Join(',', Enum.GetValues<OceaniaCountries>()),
+  //    _ => "Unknown continent"
+  //  };
+  //}
+
   [Description("Formats the the tripInfo well displayed.")]
   public static string FormatStory(string title, string author, string story) =>
     $"Title: {title}\nAuthor: {author}\n\n{story}";

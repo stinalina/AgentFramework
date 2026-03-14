@@ -13,7 +13,7 @@ internal class HandoffWorkflowAgent
     _instance ??= await CreateWorkflowAsync();
     return _instance.AsAgent(
       id: "workflow-agent",
-      name: "Continet Expert Handoff Workflow Agent",
+      name: "Continent Expert Handoff Workflow Agent",
       description: "A multi-agent workflow for continent experts handoff",
       checkpointManager: CheckpointManager.CreateInMemory(),
       executionEnvironment: InProcessExecution.Default
@@ -27,15 +27,21 @@ internal class HandoffWorkflowAgent
     AIAgent asiaExpert = await AgentFactory.GetContinentExpert(Continent.Asia);
     AIAgent europeExpert = await AgentFactory.GetContinentExpert(Continent.Europe);
     AIAgent oceaniaExpert = await AgentFactory.GetContinentExpert(Continent.Oceania);
+    AIAgent travelAgencyExpert = await TravelAgencyExpert.GetExpertAsync();
 
-    var allAgents = new List<AIAgent>() { africaExpert, americaExpert, asiaExpert, europeExpert, oceaniaExpert };
+    var allContinentAgents = new List<AIAgent>() { africaExpert, americaExpert, asiaExpert, europeExpert, oceaniaExpert };
 
-    return AgentWorkflowBuilder.CreateHandoffBuilderWith(africaExpert)
-      .WithHandoffs(allAgents.Except([africaExpert]), africaExpert, "The question is related to the africa continent.")
-      .WithHandoffs(allAgents.Except([americaExpert]), americaExpert, "The question is related to the america continent.")
-      .WithHandoffs(allAgents.Except([asiaExpert]), asiaExpert, "The question is related to the asia continent.")
-      .WithHandoffs(allAgents.Except([europeExpert]), europeExpert, "The question is related to the europe continent.")
-      .WithHandoffs(allAgents.Except([oceaniaExpert]), oceaniaExpert, "The question is related to the oceania continent.")
+    return AgentWorkflowBuilder.CreateHandoffBuilderWith(travelAgencyExpert)
+      .WithHandoff(travelAgencyExpert, africaExpert, "Das angefragte Land bezieht sich auf Afrika.")
+      .WithHandoff(travelAgencyExpert, americaExpert, "Das angefragte Land bezieht sich auf Amerika.")
+      .WithHandoff(travelAgencyExpert, asiaExpert, "Das angefragte Land bezieht sich auf Asien.")
+      .WithHandoff(travelAgencyExpert, europeExpert, "Das angefragte Land bezieht sich auf Europa.")
+      .WithHandoff(travelAgencyExpert, oceaniaExpert, "Das angefragte Land bezieht sich auf Oceanien.")
+      .WithHandoffs(allContinentAgents.Except([africaExpert]), africaExpert, "Das angefragte Land bezieht sich auf Afrika.")
+      .WithHandoffs(allContinentAgents.Except([americaExpert]), americaExpert, "Das angefragte Land bezieht sich auf Amerika.")
+      .WithHandoffs(allContinentAgents.Except([asiaExpert]), asiaExpert, "Das angefragte Land bezieht sich auf Asien.")
+      .WithHandoffs(allContinentAgents.Except([europeExpert]), europeExpert, "Das angefragte Land bezieht sich auf Europa.")
+      .WithHandoffs(allContinentAgents.Except([oceaniaExpert]), oceaniaExpert, "Das angefragte Land bezieht sich auf Oceanien.")
       .Build();
 
     //Console.WriteLine("=== WORKFLOW STRUCTURE ===");
