@@ -71,7 +71,7 @@ public static class WorkflowExtensions
                     Console.WriteLine();
                   }
 
-                  Console.WriteLine($"- {responseUpdate.AuthorName}: ");
+                  Console.WriteLine($"{responseUpdate.AuthorName}: ");
                     lastAuthorName = responseUpdate.AuthorName;
                 }
                 //Console.Write(responseUpdate.AuthorName + ": ");
@@ -91,17 +91,10 @@ public static class WorkflowExtensions
 
             case WorkflowOutputEvent output:
             {
-              // Workflow completed
-              var conversationHistory = output.As<List<ChatMessage>>()
-                  .Where(x => x.Contents.Any(c => c is TextContent))
-                  .ToList();
-
-              //Console.WriteLine("\n=== Final Conversation ===");
-              //foreach (var message in conversationHistory)
-              //{
-              //  Console.WriteLine($"{message.AuthorName}: {message.Text}");
-              //}
-              break;
+                Console.ForegroundColor = ConsoleColor.DarkMagenta;
+                Console.WriteLine("Reisebüro Center: Vielen Dank für Ihre Anfrage! Ihre Reise wurde erfolgreich erstellt.");
+                Console.ResetColor();
+                break;
             }
 
             case SuperStepCompletedEvent superStep:

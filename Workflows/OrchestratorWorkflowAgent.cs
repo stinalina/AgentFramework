@@ -32,18 +32,16 @@ internal class OrchestratorWorkflowAgent
     //AIAgent oceaniaExpert = await AgentFactory.GetContinentExpert(Continent.Oceania);
 
     //var continentAgents = new List<AIAgent>() { africaExpert, americaExpert, asiaExpert, europeExpert, oceaniaExpert };
-    AIAgent travelAgencyExpert = await TravelAgencyExpert.GetExpertAsync();
 
     AIAgent handOffWorkflowAsAgent = await HandoffWorkflowAgent.GetContinentWorkflowAgentAsync();
-
-    TravelAgencyGroupChatManager manager = new(new List<AIAgent>() { handOffWorkflowAsAgent }, travelAgencyExpert)
-    {
-      MaximumIterationCount = 3
-    };
+    AIAgent bookingAgent = await BookingExpert.GetAgentAsync();
 
     return AgentWorkflowBuilder
-      .CreateGroupChatBuilderWith(_ => manager)
-      .AddParticipants(handOffWorkflowAsAgent)
+      .CreateGroupChatBuilderWith(participants => new TravelAgencyGroupChatManager(participants)
+      {
+        MaximumIterationCount = 3,
+      })
+      .AddParticipants(handOffWorkflowAsAgent, bookingAgent)
       .Build();
 
 

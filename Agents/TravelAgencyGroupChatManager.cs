@@ -7,39 +7,43 @@ namespace AgentFramework.Agents;
 internal sealed class TravelAgencyGroupChatManager : GroupChatManager
 {
   private readonly IReadOnlyList<AIAgent> _agents;
-  private readonly AIAgent _expert;
 
-  public TravelAgencyGroupChatManager(IReadOnlyList<AIAgent> agents, AIAgent expert)
+  public TravelAgencyGroupChatManager(IReadOnlyList<AIAgent> agents)
   {
     this._agents = agents;
-    this._expert = expert;
   }
 
   protected override ValueTask<AIAgent> SelectNextAgentAsync(IReadOnlyList<ChatMessage> history, CancellationToken cancellationToken = default)
   {
+    Console.ForegroundColor = ConsoleColor.DarkYellow;
+    Console.WriteLine($"Iteration {this.IterationCount + 1} of {this.MaximumIterationCount}");
+    Console.ResetColor();
+
     if (history.Count == 0)
     {
       throw new InvalidOperationException("Conversation is empty; cannot select next speaker.");
     }
 
-    //if (history.Count == 1)
-    //{
-    //  return new ValueTask<AIAgent>(this._expert);
-    //}
+    if (this.IterationCount == this.MaximumIterationCount - 1)
+    {
+      var finalAgent = this._agents.FirstOrDefault(a => a.Name == "Reisebüroangestellter 2");
+      ArgumentNullException.ThrowIfNull(finalAgent, "Reisebüroangestellter 2 agent not found in agents list.");
+      return new ValueTask<AIAgent>(finalAgent);
+    }
 
-    //TODO check continent and then select the right agent based on that.
-    AIAgent continentSpecialist = this._agents[0];//.First(a => a.Name == "DevOpsEngineer"); //name: $"{continent} Expert",
-    return new ValueTask<AIAgent>(continentSpecialist);
+    return new ValueTask<AIAgent>(this._agents[0]);
   }
 
   protected override ValueTask<bool> ShouldTerminateAsync(IReadOnlyList<ChatMessage> history, CancellationToken cancellationToken = default)
   {
-    //var last = history.LastOrDefault();
-    //bool shouldTerminate = last?.AuthorName == _orchestratorName &&
-    //    last.Text?.Contains("approve", StringComparison.OrdinalIgnoreCase) == true;
-
+    //bool shouldTerminate = history.LastOrDefault()?.AuthorName == "Reisebüroangestellter 2";
+    //if (shouldTerminate)
+    //{
+    //  Console.ForegroundColor = ConsoleColor.Green;
+    //  Console.WriteLine("Reisebüro Center: Vielen Dank für Ihre Anfrage! Ihre Reise wurde erfolgreich erstellt.");
+    //  Console.ResetColor();
+    //}
     //return ValueTask.FromResult(shouldTerminate);
-
     return base.ShouldTerminateAsync(history, cancellationToken);
   }
 }

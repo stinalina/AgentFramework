@@ -10,7 +10,7 @@ using OpenAI.Responses;
 
 namespace AgentFramework.Agents;
 
-internal class TravelAgencyExpert
+internal class BookingExpert
 {
   //TODO das global auslagern, damit es nicht in jedem Agenten neu erstellt wird
   private static readonly string endpoint = Environment.GetEnvironmentVariable("AZURE_OPENAI_ENDPOINT")
@@ -19,25 +19,25 @@ internal class TravelAgencyExpert
   private static readonly string deploymentName = Environment.GetEnvironmentVariable("AZURE_OPENAI_DEPLOYMENT_NAME")
     ?? throw new InvalidOperationException("AZURE_OPENAI_DEPLOYMENT_NAME is not set.");
 
-  private static AIAgent _employee;
+  private static AIAgent _agent;
 
-  public static async Task<AIAgent> GetExpertAsync()
+  public static async Task<AIAgent> GetAgentAsync()
   {
-    if (_employee is AIAgent agent)
+    if (_agent is AIAgent agent)
     {
       return agent;
     }
 
-    _employee = await CreateExpertAsync();
-    return _employee;
+    _agent = await CreateAgentAsync();
+    return _agent;
   }
 
-  private static async Task<AIAgent> CreateExpertAsync()
+  private static async Task<AIAgent> CreateAgentAsync()
   {
-    Console.WriteLine($"Creating Travel Agency Employee...");
+    Console.WriteLine($"Creating Booking Agent...");
 
     string instructions = File.ReadAllText(
-      Path.Combine(AppContext.BaseDirectory, $"instructions/travel_agency_employee.instructions.txt"));
+      Path.Combine(AppContext.BaseDirectory, $"instructions/booking_agent.instructions.txt"));
 
     //var persistentAgentsClient = new PersistentAgentsClient(endpoint, new AzureCliCredential());
     //var agentMetadata = await persistentAgentsClient.Administration.CreateAgentAsync(
@@ -54,8 +54,8 @@ internal class TravelAgencyExpert
      .GetChatClient(deploymentName) // ← Chat Completions API statt Responses API to avaoid 404
      .AsAIAgent(
         instructions,
-        name: "Reisebüroangestellter 1",
-        description: "Erster Ansprechpartner im Reisebüro",
+        name: "Reisebüroangestellter 2",
+        description: "Finaler Ansprechpartner im Reisebüro, der die Buchug durchführt.",
         //tools: [ AIFunctionFactory.Create(Tools.GetCountries) ],
         clientFactory: (client) => client.AsBuilder()
           .ConfigureOptions(options =>
