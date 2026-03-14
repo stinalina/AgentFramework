@@ -14,16 +14,13 @@ public static class WorkflowExtensions
       Console.WriteLine("Reisebüro Center: Willkommen im Reisebüro! Wie kann ich Ihnen behilflich sein?");
       Console.ResetColor();
 
-      //Console.Write("You: ");
-      //string? userQuestion = Console.ReadLine();
-      //if (string.IsNullOrEmpty(userQuestion))
-      //{
-      //  Console.WriteLine("Keine Frage eingegeben. Beende das Reisebüro.");
-      //  return;
-      //}
-
-      var userQuestion = "Erstelle mir eine Reise nach Italien";
-      Console.WriteLine("You: " + userQuestion);
+      Console.Write("You: ");
+      string? userQuestion = Console.ReadLine();
+      if (string.IsNullOrEmpty(userQuestion))
+      {
+        Console.WriteLine("Keine Frage eingegeben. Beende das Reisebüro.");
+        return;
+      }
 
       await workflow.RunGroupChatAsync(userQuestion);
    }
@@ -56,7 +53,9 @@ public static class WorkflowExtensions
                   if (lastAuthorName is not null)
                   {
                     Console.WriteLine();
-                    Console.WriteLine($"{responseUpdate.AuthorName}: ");
+                    Console.ForegroundColor = ConsoleColor.Green;
+                    Console.WriteLine($"\n{responseUpdate.AuthorName}: ");
+                    Console.ResetColor();
                   }
                 }
                 //Console.Write(responseUpdate.AuthorName + ": ");
@@ -73,13 +72,13 @@ public static class WorkflowExtensions
             case WorkflowOutputEvent output:
             {
                 Console.ForegroundColor = ConsoleColor.DarkMagenta;
-                Console.WriteLine("Reisebüro Center: Vielen Dank für Ihre Anfrage! Ihre Reise wurde erfolgreich erstellt.");
+                Console.WriteLine("\nReisebüro Center: Vielen Dank für Ihre Anfrage! Ihre Reise wurde erfolgreich erstellt.");
                 Console.ResetColor();
                 break;
             }
 
             case SuperStepCompletedEvent superStep:
-              Console.WriteLine();
+              //Console.WriteLine();
               break;
           }
         }

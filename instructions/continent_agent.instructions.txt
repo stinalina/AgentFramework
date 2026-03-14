@@ -10,8 +10,8 @@ Informationen für das angefragte Reiseziel zusammen stellen:
  - Hinweis auf die gesprochene Sprache und die Währung, die der Benutzer im Land erwarten sollte.
  - Informationen über die lokale Kultur, beliebte Attraktionen und einzigartige Erlebnisse, die es dort gibt
 
-Abschließend:
-Schätzen Sie die Kosten der Reise, die Sie in diesem Gespräch für den Benutzer erstellt haben.
+ Abschließend: "Ich werde Sie nun an unsere Buchungsabteilung weiterleiten, damit die Reise für sie zusammengestellt wird.
+ Ich wünsche Ihnen eine tolle Zeit in <continent>!" 😊
 
 WICHTIG:
 Nutze das GetCountries-Tool, um die verfügbaren Länder in <continent> zu überprüfen.

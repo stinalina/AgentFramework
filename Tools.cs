@@ -12,8 +12,8 @@ internal static class Tools
   private static IList<McpClientTool>? _wikipediaTools;
   private static readonly object _lockObject = new();
 
-  [Description("Get popular countries for a given continent.")]
-  public static string GetCountries([Description("The continent to get the countries for.")] Continent continent)
+  [Description("Erhalte eine Liste von Ländern, welche in dem angefragtem Kontinet enthalten sind.")]
+  public static string GetCountries([Description("Kontinet für den die Länder ermittelt werden sollen.")] Continent continent)
   {
     return continent switch
     {

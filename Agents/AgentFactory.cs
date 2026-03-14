@@ -40,8 +40,8 @@ internal static class AgentFactory
     var wikipediaTools = await Tools.WikipediaMCPTool();
 
     return new AzureOpenAIClient(new Uri(_endpoint), new AzureCliCredential())
-     .GetChatClient(_deploymentName)
-     .AsAIAgent(
+      .GetChatClient(_deploymentName)
+      .AsAIAgent(
         instructions,
         name: $"{continent} Expert",
         description: $"An expert in all questions related to {continent}.",
@@ -63,11 +63,13 @@ internal static class AgentFactory
             options.ToolMode = ChatToolMode.Auto;
             options.AllowBackgroundResponses = false; // Deaktiviert wegen Continuation-Fehler
           })
+          .UseFunctionInvocation()
           .Build()
         )
-       .AsBuilder()
-       //.Use(runFunc: CustomMiddleware.DebugMessagesMiddleware, runStreamingFunc: null)
-       .Use(CustomMiddleware.FunctionMiddleware_LogUsedTool)
-       .Build();
+      .AsBuilder()
+      //.Use(runFunc: CustomMiddleware.DebugMessagesMiddleware, runStreamingFunc: null)
+      //.Use(runFunc: CustomMiddleware.CustomAgentRunMiddleware, runStreamingFunc: CustomMiddleware.CustomAgentRunStreamingMiddleware)
+      //.Use(CustomMiddleware.FunctionMiddleware_LogUsedTool) //Die .AsBuilder().Use(FunctionMiddleware_LogUsedTool).Build() fügt die Middleware dagegen auf der Agent-Pipeline-Ebene hinzu – diese wird von der internen Chat-Pipeline nicht durchlaufen.
+      .Build();
   }
 }

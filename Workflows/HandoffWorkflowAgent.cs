@@ -16,13 +16,13 @@ internal class HandoffWorkflowAgent
     _deploymentName = deploymentName;
     _instance ??= await CreateWorkflowAsync();
 
-    return _instance.AsAgent(
-      id: "workflow-agent",
-      name: "Continent Expert Handoff Workflow Agent",
-      description: "A multi-agent workflow for continent experts handoff",
-      checkpointManager: CheckpointManager.CreateInMemory(),
-      executionEnvironment: InProcessExecution.Default
-    );
+    return _instance
+      .AsAgent(
+        id: "workflow-agent",
+        name: "Continent Expert Handoff Workflow Agent",
+        description: "A multi-agent workflow for continent experts handoff",
+        checkpointManager: CheckpointManager.CreateInMemory(),
+        executionEnvironment: InProcessExecution.Default);
   }
 
   private static async Task<Workflow> CreateWorkflowAsync()

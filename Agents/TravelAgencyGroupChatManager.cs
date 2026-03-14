@@ -16,7 +16,7 @@ internal sealed class TravelAgencyGroupChatManager : GroupChatManager
   protected override ValueTask<AIAgent> SelectNextAgentAsync(IReadOnlyList<ChatMessage> history, CancellationToken cancellationToken = default)
   {
     Console.ForegroundColor = ConsoleColor.DarkYellow;
-    Console.WriteLine($"Iteration {this.IterationCount + 1} of {this.MaximumIterationCount}");
+    Console.WriteLine($"\nIteration {this.IterationCount + 1} of {this.MaximumIterationCount}");
     Console.ResetColor();
 
     if (history.Count == 0)
@@ -44,6 +44,7 @@ internal sealed class TravelAgencyGroupChatManager : GroupChatManager
     //  Console.ResetColor();
     //}
     //return ValueTask.FromResult(shouldTerminate);
+    //TODO print session?!
     return base.ShouldTerminateAsync(history, cancellationToken);
   }
 }
