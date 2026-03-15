@@ -1,4 +1,4 @@
-﻿namespace AgentFramework;
+﻿namespace AgentFramework.Models;
 
 internal class TravelAgencyBookingFormat
 {
