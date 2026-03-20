@@ -45,11 +45,19 @@ public static class WorkflowExtensions
           case AgentResponseUpdateEvent update:
             {
               string? newAuthor = null;
-              if (update.Data is AgentResponseUpdate responseUpdate
-                  && responseUpdate.AuthorName != lastAuthorName)
+              if (update.Data is AgentResponseUpdate responseUpdate)
               {
-                lastAuthorName = responseUpdate.AuthorName;
-                newAuthor = lastAuthorName;
+                if (responseUpdate.RawRepresentation is ExecutorFailedEvent failedEvent)
+                {
+                  yield return new ResponseStreamChunk(null, "Error: " + failedEvent.Data.Message, IsCompleted: true);
+                  throw new Exception(failedEvent.Data.Message);
+                }
+
+                if (responseUpdate.AuthorName != lastAuthorName)
+                {
+                  lastAuthorName = responseUpdate.AuthorName;
+                  newAuthor = lastAuthorName;
+                }
               }
 
               if (update.Update.Text is not null)
@@ -83,6 +91,12 @@ public static class WorkflowExtensions
               {
                 if (update.Data is AgentResponseUpdate responseUpdate)
                 {
+                  if (responseUpdate.RawRepresentation is ExecutorFailedEvent failedEvent)
+                  {
+                    Console.WriteLine("Error: " + failedEvent.Data.Message);
+                    throw new Exception("Workflow stopped");
+                  }
+
                   if (responseUpdate.AuthorName != lastAuthorName)
                   {
                     lastAuthorName = responseUpdate.AuthorName;

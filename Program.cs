@@ -25,7 +25,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddCors(options =>
 {
   options.AddPolicy("AllowLocalhost", builder =>
-    builder.WithOrigins("http://localhost:4200")
+    builder.AllowAnyOrigin()
           .AllowAnyHeader()
           .AllowAnyMethod());
 });
@@ -43,11 +43,12 @@ app.UseSwaggerUI(options =>
   options.RoutePrefix = string.Empty; // Set Swagger UI at app's root
 });
 
-app.UseHttpsRedirection();
+if (Environment.GetEnvironmentVariable("DOTNET_RUNNING_IN_CONTAINER") != "true")
+{
+  app.UseHttpsRedirection();
+}
 
-// Place for static Files and Routing
-
-app.UseCors("AllowLocalhost"); //Specify to only use a specific one (defined in AddServices)
+app.UseCors("AllowLocalhost");
 
 app.MapTravelAgentEndpoints(endpoint, deploymentName);
 

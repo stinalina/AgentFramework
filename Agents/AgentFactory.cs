@@ -39,7 +39,7 @@ internal static class AgentFactory
 
     var wikipediaTools = await Tools.WikipediaMCPTool();
 
-    return new AzureOpenAIClient(new Uri(_endpoint), new AzureCliCredential())
+    return AzureOpenAIClientFactory.Create(_endpoint)
       .GetChatClient(_deploymentName)
       .AsAIAgent(
         instructions,

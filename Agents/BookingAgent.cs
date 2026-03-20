@@ -33,7 +33,7 @@ internal class BookingExpert
     string instructions = File.ReadAllText(
       Path.Combine(AppContext.BaseDirectory, $"instructions/booking_agent.instructions.txt"));
 
-    //var persistentAgentsClient = new PersistentAgentsClient(endpoint, new AzureCliCredential());
+    //var persistentAgentsClient = new PersistentAgentsClient(endpoint, new DefaultAzureCredential());
     //var agentMetadata = await persistentAgentsClient.Administration.CreateAgentAsync(
     //       model: deploymentName,
     //       name: "Travel Agency Employee",
@@ -44,7 +44,7 @@ internal class BookingExpert
     //return await persistentAgentsClient.GetAIAgentAsync(agentMetadata.Value.Id);
 
 
-    return new AzureOpenAIClient(new Uri(_endpoint), new AzureCliCredential())
+    return AzureOpenAIClientFactory.Create(_endpoint)
      .GetChatClient(_deploymentName) // ← Chat Completions API statt Responses API to avaoid 404
      .AsAIAgent(
         instructions,
