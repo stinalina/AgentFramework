@@ -59,15 +59,15 @@ internal class CustomMiddleware
   {
     try
     {
-    Console.WriteLine($"[Function] Invoking: {context.Function.Name}");
+    Console.WriteLine($"\n[Function] Invoking: {context.Function.Name}");
 
       var result = await next(context, cancellationToken);
-      Console.WriteLine($"[Function] Result: {result}");
+      Console.WriteLine($"[Function] Result: {result}\n");
       return result;
     }
     catch (Exception ex)
     {
-      Console.WriteLine($"[Function] Error: {ex.Message}");
+      Console.WriteLine($"\n[Function] Error: {ex.Message}\n");
       throw;
     }
   }

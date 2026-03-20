@@ -17,7 +17,7 @@ string deploymentName = Environment.GetEnvironmentVariable("AZURE_OPENAI_DEPLOYM
   ?? throw new InvalidOperationException("AZURE_OPENAI_DEPLOYMENT_NAME is not set.");
 
 
-#if false
+#if true
 #region API
 
 var builder = WebApplication.CreateBuilder(args);
@@ -70,6 +70,8 @@ app.Run();
 
 Workflow workflow = await OrchestratorWorkflowAgent.CreateWorkflowAsync(endpoint, deploymentName);
 await workflow.ExecuteWorkflowAsync();
+
+await Tools.DisposeMcpClientsAsync();
 
 // When in-memory chat history storage is used, it's possible to access the chat history
 // that is stored in the session via the provider attached to the agent.

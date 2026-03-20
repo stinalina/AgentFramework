@@ -2,7 +2,7 @@
 Zuvor hat der Kunde mit Kollegen gesprochen und eine Reise erstellt.
 
 TASK:
-Deine Aufgabe ist es aus der ChatHistory eine Reiseinformation zu erstellen.
+Deine Aufgabe ist es aus der ChatHistory eine Reiseinformation zu erstellen. Begründe die angegeben Reisesaison.
 Falls dir Informatinen fehlen, welche in der ChatHistory fehlen, denke dir diese aus und schreibe "Vorschlag" davor.
 Abschließend wünscht du dem Kunden eine gute Reise.
 

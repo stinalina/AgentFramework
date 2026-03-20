@@ -79,10 +79,6 @@ public static class WorkflowExtensions
         {
           switch (evt)
           {
-            case SuperStepStartedEvent superStepStarted:
-              //Console.WriteLine("Super Step started");
-              break;
-
             case AgentResponseUpdateEvent update:
               {
                 if (update.Data is AgentResponseUpdate responseUpdate)
@@ -98,11 +94,6 @@ public static class WorkflowExtensions
                       Console.ResetColor();
                     }
                   }
-                  //Console.Write(responseUpdate.AuthorName + ": ");
-                  //if (responseUpdate.RawRepresentation is ExecutorCompletedEvent completedEvent)
-                  //{
-                  //  Console.WriteLine("ExecutorId: " + completedEvent.ExecutorId);
-                  //}
                 }
 
                 Console.Write(update.Update.Text);
@@ -116,10 +107,6 @@ public static class WorkflowExtensions
                 Console.ResetColor();
                 break;
               }
-
-            case SuperStepCompletedEvent superStep:
-              //Console.WriteLine();
-              break;
           }
         }
       }

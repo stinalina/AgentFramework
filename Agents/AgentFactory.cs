@@ -69,7 +69,7 @@ internal static class AgentFactory
       .AsBuilder()
       //.Use(runFunc: CustomMiddleware.DebugMessagesMiddleware, runStreamingFunc: null)
       //.Use(runFunc: CustomMiddleware.CustomAgentRunMiddleware, runStreamingFunc: CustomMiddleware.CustomAgentRunStreamingMiddleware)
-      //.Use(CustomMiddleware.FunctionMiddleware_LogUsedTool) //Die .AsBuilder().Use(FunctionMiddleware_LogUsedTool).Build() fügt die Middleware dagegen auf der Agent-Pipeline-Ebene hinzu – diese wird von der internen Chat-Pipeline nicht durchlaufen.
+      .Use(CustomMiddleware.FunctionMiddleware_LogUsedTool) //Die .AsBuilder().Use(FunctionMiddleware_LogUsedTool).Build() fügt die Middleware dagegen auf der Agent-Pipeline-Ebene hinzu – diese wird von der internen Chat-Pipeline nicht durchlaufen.
       .Build();
   }
 }

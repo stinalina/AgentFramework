@@ -62,7 +62,7 @@ internal class TravelAgencyExpert
           .Build()
         )
      .AsBuilder()
-     //.Use(CustomMiddleware.FunctionMiddleware_LogUsedTool)
+     //.Use(CustomMiddleware.CustomAgentRunMiddleware, CustomMiddleware.CustomAgentRunStreamingMiddleware)
      .Build();
   }
 }
