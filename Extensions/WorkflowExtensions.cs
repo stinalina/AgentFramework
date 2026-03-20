@@ -50,7 +50,7 @@ public static class WorkflowExtensions
                 if (responseUpdate.RawRepresentation is ExecutorFailedEvent failedEvent)
                 {
                   yield return new ResponseStreamChunk(null, "Error: " + failedEvent.Data.Message, IsCompleted: true);
-                  throw new Exception(failedEvent.Data.Message);
+                  yield break;
                 }
 
                 if (responseUpdate.AuthorName != lastAuthorName)
