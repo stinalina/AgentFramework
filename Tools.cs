@@ -1,6 +1,4 @@
-﻿using Microsoft.Extensions.AI;
-using ModelContextProtocol.Client;
-using System.Collections.Specialized;
+﻿using ModelContextProtocol.Client;
 using System.ComponentModel;
 
 namespace AgentFramework;
@@ -11,6 +9,9 @@ internal static class Tools
   private static McpClient? _wikipediaMcpClient;
   private static IList<McpClientTool>? _wikipediaTools;
   private static readonly object _lockObject = new();
+
+  private static string _mcpServerUrl = Environment.GetEnvironmentVariable("AZURE_HOSTED_MCP_SERVER")
+    ?? throw new InvalidOperationException("AZURE_HOSTED_MCP_SERVER is not set.");
 
   [Description("Erhalte eine Liste von Ländern, welche in dem angefragtem Kontinet enthalten sind.")]
   public static string GetCountries([Description("Kontinet für den die Länder ermittelt werden sollen.")] Continent continent)
@@ -44,39 +45,27 @@ internal static class Tools
 
     try
     {
-      // Create the MCP client once and keep it alive
-      _wikipediaMcpClient = await McpClient.CreateAsync(new StdioClientTransport(new()
+      var options = new HttpClientTransportOptions()
       {
-        Name = "Wikipedia MCP Server",
-        Command = "docker",
-        Arguments = [
-          "run",
-          "-i",
-          "--rm",
-          "mcp/wikipedia-mcp"
-        ],
-      }));
+        Endpoint = new Uri(_mcpServerUrl)
+      };
+      _wikipediaMcpClient = await McpClient.CreateAsync(new HttpClientTransport(options));
 
-      // Retrieve the list of tools available on the Wikipedia MCP server
       var wikipediaMcpTools = await _wikipediaMcpClient.ListToolsAsync().ConfigureAwait(false);
 
-      // Filter for the tools we want
       // available tools: https://github.com/Rudra-ravi/wikipedia-mcp?tab=readme-ov-file#available-mcp-tools
-      _wikipediaTools = wikipediaMcpTools
-        .Where(tool => tool.Name.Contains("search_wikipedia") || tool.Name.Contains("get_summary"))
-        .ToList();
+      _wikipediaTools = [..wikipediaMcpTools
+        .Where(tool => tool.Name.Contains("search_wikipedia") || tool.Name.Contains("get_summary"))];
 
       return _wikipediaTools;
     }
     catch (Exception ex)
     {
       Console.WriteLine($"[WikipediaMCP] Error initializing Wikipedia MCP client: {ex.Message}");
-      // Return empty list on error instead of throwing
-      return new List<McpClientTool>();
+      return [];
     }
   }
 
-  // Clean up MCP client on application shutdown
   public static async ValueTask DisposeMcpClientsAsync()
   {
     if (_wikipediaMcpClient != null)

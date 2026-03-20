@@ -1,4 +1,5 @@
-﻿using AgentFramework.Entdpoints;
+﻿using AgentFramework;
+using AgentFramework.Entdpoints;
 using AgentFramework.Extensions;
 using AgentFramework.Workflows;
 using DotNetEnv;
@@ -16,7 +17,7 @@ string deploymentName = Environment.GetEnvironmentVariable("AZURE_OPENAI_DEPLOYM
   ?? throw new InvalidOperationException("AZURE_OPENAI_DEPLOYMENT_NAME is not set.");
 
 
-#if true
+#if false
 #region API
 
 var builder = WebApplication.CreateBuilder(args);
@@ -49,6 +50,10 @@ app.UseHttpsRedirection();
 app.UseCors("AllowLocalhost"); //Specify to only use a specific one (defined in AddServices)
 
 app.MapTravelAgentEndpoints(endpoint, deploymentName);
+
+app.Lifetime.ApplicationStopped.Register(() => {
+  Tools.DisposeMcpClientsAsync().AsTask().GetAwaiter().GetResult(); //Do not use .Wait() to get the original StackTrace!
+});
 app.Run();
 
 #endregion

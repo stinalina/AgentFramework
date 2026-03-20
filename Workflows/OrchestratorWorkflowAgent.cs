@@ -14,7 +14,7 @@ internal class OrchestratorWorkflowAgent
     return AgentWorkflowBuilder
       .CreateGroupChatBuilderWith(participants => new TravelAgencyGroupChatManager(participants)
       {
-        MaximumIterationCount = 3,
+        MaximumIterationCount = 2,
       })
       .AddParticipants(handOffWorkflowAsAgent, bookingAgent)
       .Build();
