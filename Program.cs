@@ -2,13 +2,19 @@
 using AgentFramework.Entdpoints;
 using AgentFramework.Extensions;
 using AgentFramework.Workflows;
-using DotNetEnv;
+using DotNetEnv; 
 using Microsoft.Agents.AI.Workflows;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Options;
 
-Env.Load(Path.Combine(AppContext.BaseDirectory, ".env"));
+var envFile = Path.Combine(AppContext.BaseDirectory, ".env");
+if (File.Exists(envFile))
+{
+  Env.Load(envFile);
+}
 
 string endpoint = Environment.GetEnvironmentVariable("AZURE_OPENAI_ENDPOINT")
  ?? throw new InvalidOperationException("AZURE_OPENAI_ENDPOINT is not set.");
@@ -24,18 +30,27 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddCors(options =>
 {
-  options.AddPolicy("AllowLocalhost", builder =>
+  options.AddPolicy("AllowAnyOrigin", builder =>
     builder.AllowAnyOrigin()
-          .AllowAnyHeader()
-          .AllowAnyMethod());
+           .AllowAnyHeader()
+           .AllowAnyMethod());
 });
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddOpenApi();
 
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+  options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+  options.KnownIPNetworks.Clear(); 
+  options.KnownProxies.Clear(); 
+});
+
 var app = builder.Build();
 
-app.UseDeveloperExceptionPage();
+app.UseForwardedHeaders();
 
+
+app.UseDeveloperExceptionPage();
 app.MapOpenApi();
 app.UseSwaggerUI(options =>
 {
@@ -48,7 +63,7 @@ if (Environment.GetEnvironmentVariable("DOTNET_RUNNING_IN_CONTAINER") != "true")
   app.UseHttpsRedirection();
 }
 
-app.UseCors("AllowLocalhost");
+app.UseCors("AllowAnyOrigin");
 
 app.MapTravelAgentEndpoints(endpoint, deploymentName);
 

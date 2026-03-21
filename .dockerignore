@@ -18,3 +18,4 @@ README.md
 
 ## Sensitive environment files – inject via Azure at runtime instead
 .env
+**/.env
