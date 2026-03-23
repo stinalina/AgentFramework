@@ -31,7 +31,8 @@ internal static class Tools
   public static string FormatStory(string title, string author, string story) =>
     $"Title: {title}\nAuthor: {author}\n\n{story}";
 
-  [Description("Found information about continent and countries, also get the summary of a Wikipedia article.")]
+
+  [Description("Finde detaillierte Informationen über ein Land. Hilfreich beim Erstellen von Reisen. Erhalte ebenfalls einen Wikipedia Artikel.")]
   public static async Task<IList<McpClientTool>> WikipediaMCPTool()
   {
     // Use lock to ensure thread-safe initialization
