@@ -6,7 +6,6 @@ namespace AgentFramework.Workflows;
 
 internal class SequentialWorkflow
 {
-  private static Workflow? _instance;
   private static string? _endpoint;
   private static string? _deploymentName;
 
@@ -14,7 +13,7 @@ internal class SequentialWorkflow
   {
     _endpoint = endpoint;
     _deploymentName = deploymentName;
-    return _instance ??= await CreateWorkflowAsync();
+    return await CreateWorkflowAsync();
   }
 
   private static async Task<Workflow> CreateWorkflowAsync()
