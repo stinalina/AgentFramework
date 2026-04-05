@@ -13,9 +13,9 @@ namespace AgentFramework.Agents;
 
 internal class BookingExpert
 {
-  private static AIAgent _agent;
-  private static string _endpoint;
-  private static string _deploymentName;
+  private static AIAgent? _agent;
+  private static string? _endpoint;
+  private static string? _deploymentName;
 
   public static async Task<AIAgent> GetAgentAsync(string endpoint, string deploymentName)
   {

@@ -84,7 +84,7 @@ app.Run();
 //  schemaDescription: "Information about a Trip including all required, well structures data."
 // ),
 
-Workflow workflow = await OrchestratorWorkflowAgent.CreateWorkflowAsync(endpoint, deploymentName);
+Workflow workflow = await SequentialWorkflow.GetSequentialWorkflowAsync(endpoint, deploymentName);
 await workflow.ExecuteWorkflowAsync();
 
 await Tools.DisposeMcpClientsAsync();

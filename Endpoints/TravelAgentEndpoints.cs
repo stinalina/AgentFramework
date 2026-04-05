@@ -42,7 +42,7 @@ public static class TravelAgentEndpoints
 
     try
     {
-      workflow = await OrchestratorWorkflowAgent.CreateWorkflowAsync(_endpoint, _deploymentName);
+      workflow = await SequentialWorkflow.GetSequentialWorkflowAsync(_endpoint, _deploymentName);
     }
     catch (Exception ex)
     {

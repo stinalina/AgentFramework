@@ -2,6 +2,7 @@
 using Microsoft.Agents.AI;
 using Microsoft.Agents.AI.Workflows;
 using Microsoft.Extensions.AI;
+using System.Text.Json;
 using System.Runtime.CompilerServices;
 
 namespace AgentFramework.Extensions;
@@ -60,6 +61,23 @@ public static class WorkflowExtensions
                 }
               }
 
+              // Debug: Auch in Stream-Response auf Fehler prüfen
+              if (update.Data is AgentResponseUpdate responseUpdate2 && 
+                  responseUpdate2.RawRepresentation is ChatResponseUpdate chatResponseUpdate2)
+              {
+                var hasErrorCode = chatResponseUpdate2.Contents?.Any(c => 
+                  c is not null && 
+                  c.GetType().GetProperty("ErrorCode")?.GetValue(c) is not null) ?? false;
+                
+                if (hasErrorCode)
+                {
+                  Console.ForegroundColor = ConsoleColor.Red;
+                  Console.WriteLine("\n[STREAM] ErrorCode in Contents!");
+                  Console.WriteLine(JsonSerializer.Serialize(chatResponseUpdate2.Contents, new JsonSerializerOptions { WriteIndented = true }));
+                  Console.ResetColor();
+                }
+              }
+
               if (update.Update.Text is not null)
                 yield return new ResponseStreamChunk(newAuthor, update.Update.Text);
 
@@ -95,6 +113,21 @@ public static class WorkflowExtensions
                   {
                     Console.WriteLine("Error: " + failedEvent.Data.Message);
                     throw new Exception("Workflow stopped");
+                  }
+
+                  if (responseUpdate.RawRepresentation is ChatResponseUpdate chatResponseUpdate)
+                  {
+                    var hasErrorCode = chatResponseUpdate.Contents?.Any(c => 
+                      c is not null && 
+                      c.GetType().GetProperty("ErrorCode")?.GetValue(c) is not null) ?? false;
+                    
+                    if (hasErrorCode)
+                    {
+                      Console.ForegroundColor = ConsoleColor.Red;
+                      Console.WriteLine("\n[DEBUG] ErrorCode in Contents gefunden!");
+                      Console.WriteLine(JsonSerializer.Serialize(chatResponseUpdate.Contents, new JsonSerializerOptions { WriteIndented = true }));
+                      Console.ResetColor();
+                    }
                   }
 
                   if (responseUpdate.AuthorName != lastAuthorName)
