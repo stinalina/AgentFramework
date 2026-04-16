@@ -67,9 +67,7 @@ app.UseCors("AllowAnyOrigin");
 
 app.MapTravelAgentEndpoints(endpoint, deploymentName);
 
-app.Lifetime.ApplicationStopped.Register(() => {
-  Tools.DisposeMcpClientsAsync().AsTask().GetAwaiter().GetResult(); //Do not use .Wait() to get the original StackTrace!
-});
+app.Lifetime.ApplicationStopped.Register(() => { });
 app.Run();
 
 #endregion
@@ -86,8 +84,6 @@ app.Run();
 
 Workflow workflow = await OrchestratorWorkflowAgent.CreateWorkflowAsync(endpoint, deploymentName);
 await workflow.ExecuteWorkflowAsync();
-
-await Tools.DisposeMcpClientsAsync();
 
 // When in-memory chat history storage is used, it's possible to access the chat history
 // that is stored in the session via the provider attached to the agent.

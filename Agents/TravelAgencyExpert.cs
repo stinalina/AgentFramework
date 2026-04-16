@@ -12,19 +12,12 @@ namespace AgentFramework.Agents;
 
 internal class TravelAgencyExpert
 {
-  private static AIAgent _employee;
-  private static string _endpoint;
-  private static string _deploymentName;
-
   public static async Task<AIAgent> GetExpertAsync(string endpoint, string deploymentName)
   {
-    _endpoint = endpoint;
-    _deploymentName = deploymentName;
-    _employee ??= await CreateExpertAsync();
-    return _employee;
+    return await CreateExpertAsync(endpoint, deploymentName);
   }
 
-  private static async Task<AIAgent> CreateExpertAsync()
+  private static async Task<AIAgent> CreateExpertAsync(string endpoint, string deploymentName)
   {
     Console.WriteLine($"Creating Travel Agency Employee...");
 
@@ -42,8 +35,8 @@ internal class TravelAgencyExpert
     //return await persistentAgentsClient.GetAIAgentAsync(agentMetadata.Value.Id);
 
 
-    return AzureOpenAIClientFactory.Create(_endpoint)
-     .GetChatClient(_deploymentName) // ← Chat Completions API statt Responses API to avaoid 404
+    return AzureOpenAIClientFactory.Create(endpoint)
+     .GetChatClient(deploymentName) // ← Chat Completions API statt Responses API to avaoid 404
      .AsAIAgent(
         instructions,
         name: "Reisebüroangestellter 1",

@@ -13,20 +13,13 @@ namespace AgentFramework.Agents;
 
 internal class BookingExpert
 {
-  private static AIAgent _agent;
-  private static string _endpoint;
-  private static string _deploymentName;
-
   public static async Task<AIAgent> GetAgentAsync(string endpoint, string deploymentName)
   {
-    _endpoint = endpoint;
-    _deploymentName = deploymentName;
-
-    _agent ??= await CreateAgentAsync();
-    return _agent;
+    return await CreateAgentAsync(endpoint, deploymentName);
   }
 
-  private static async Task<AIAgent> CreateAgentAsync()
+
+  private static async Task<AIAgent> CreateAgentAsync(string endpoint, string deploymentName)
   {
     Console.WriteLine($"Creating Booking Agent...");
 
@@ -44,17 +37,16 @@ internal class BookingExpert
     //return await persistentAgentsClient.GetAIAgentAsync(agentMetadata.Value.Id);
 
 
-    return AzureOpenAIClientFactory.Create(_endpoint)
-     .GetChatClient(_deploymentName) // ← Chat Completions API statt Responses API to avaoid 404
+    return AzureOpenAIClientFactory.Create(endpoint)
+     .GetChatClient(deploymentName) // ← Chat Completions API statt Responses API to avoid 404
      .AsAIAgent(
         instructions,
         name: "Reisebüroangestellter 2",
         description: "Finaler Ansprechpartner im Reisebüro, der die Buchug durchführt.",
-        //tools: [ AIFunctionFactory.Create(Tools.GetCountries) ],
         clientFactory: (client) => client.AsBuilder()
           .ConfigureOptions(options =>
           {
-            options.Temperature = 0.3f;
+            options.Temperature = 0.5f;
             options.TopP = 0.8f;
             options.MaxOutputTokens = 4096;
             options.AllowMultipleToolCalls = true;

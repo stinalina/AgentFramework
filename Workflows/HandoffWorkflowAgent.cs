@@ -6,17 +6,11 @@ namespace AgentFramework.Workflows;
 
 internal class HandoffWorkflowAgent
 {
-  private static Workflow _instance;
-  private static string _endpoint;
-  private static string _deploymentName;
-
   public static async Task<AIAgent> GetContinentWorkflowAgentAsync(string endpoint, string deploymentName)
   {
-    _endpoint = endpoint;
-    _deploymentName = deploymentName;
-    _instance ??= await CreateWorkflowAsync();
+    Workflow instance = await CreateWorkflowAsync(endpoint, deploymentName);
 
-    return _instance
+    return instance
       .AsAgent(
         id: "workflow-agent",
         name: "Continent Expert Handoff Workflow Agent",
@@ -25,11 +19,11 @@ internal class HandoffWorkflowAgent
         executionEnvironment: InProcessExecution.Default);
   }
 
-  private static async Task<Workflow> CreateWorkflowAsync()
+  private static async Task<Workflow> CreateWorkflowAsync(string endpoint, string deploymentName)
   {
-    AIAgent travelAgencyExpert = await TravelAgencyExpert.GetExpertAsync(_endpoint, _deploymentName);
+    AIAgent travelAgencyExpert = await TravelAgencyExpert.GetExpertAsync(endpoint, deploymentName);
 
-    Dictionary<string, AIAgent> continentExperts = await AgentFactory.CreateAgentExpertsAsync(_endpoint, _deploymentName);
+    Dictionary<string, AIAgent> continentExperts = await AgentFactory.CreateAgentExpertsAsync(endpoint, deploymentName);
     AIAgent africaExpert = continentExperts[Continent.Africa.ToString()];
     AIAgent americaExpert = continentExperts[Continent.America.ToString()];
     AIAgent asiaExpert = continentExperts[Continent.Asia.ToString()];

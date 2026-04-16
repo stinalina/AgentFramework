@@ -10,26 +10,20 @@ namespace AgentFramework.Agents;
 
 internal static class AgentFactory
 {
-  private static string _endpoint;
-  private static string _deploymentName;
-
-  private static readonly Dictionary<string, AIAgent> ContinentExperts = [];
-
   public static async Task<Dictionary<string, AIAgent>> CreateAgentExpertsAsync(string endpoint, string deploymentName)
   {
-    _endpoint = endpoint;
-    _deploymentName = deploymentName;
+    var continentExperts = new Dictionary<string, AIAgent>();
 
     foreach (var continent in Enum.GetValues<Continent>())
     {
-      AIAgent agent = await CreateContinentExpertAsync(continent);
-      ContinentExperts.Add(continent.ToString(), agent);
+      AIAgent agent = await CreateContinentExpertAsync(continent, endpoint, deploymentName);
+      continentExperts.Add(continent.ToString(), agent);
     }
 
-    return ContinentExperts;
+    return continentExperts;
   }
   
-  private static async Task<AIAgent> CreateContinentExpertAsync(Continent continent)
+  private static async Task<AIAgent> CreateContinentExpertAsync(Continent continent, string endpoint, string deploymentName)
   {
     Console.WriteLine($"Creating {continent} Expert...");
 
@@ -39,8 +33,8 @@ internal static class AgentFactory
 
     var wikipediaTools = await Tools.WikipediaMCPTool();
 
-    return AzureOpenAIClientFactory.Create(_endpoint)
-      .GetChatClient(_deploymentName)
+    return AzureOpenAIClientFactory.Create(endpoint)
+      .GetChatClient(deploymentName)
       .AsAIAgent(
         instructions,
         name: $"{continent} Expert",

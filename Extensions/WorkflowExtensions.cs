@@ -3,6 +3,7 @@ using Microsoft.Agents.AI;
 using Microsoft.Agents.AI.Workflows;
 using Microsoft.Extensions.AI;
 using System.Runtime.CompilerServices;
+using System.Text.Json;
 
 namespace AgentFramework.Extensions;
 
@@ -57,6 +58,23 @@ public static class WorkflowExtensions
                 {
                   lastAuthorName = responseUpdate.AuthorName;
                   newAuthor = lastAuthorName;
+                }
+              }
+
+              // Debug: Auch in Stream-Response auf Fehler prüfen
+              if (update.Data is AgentResponseUpdate responseUpdate2 && 
+                  responseUpdate2.RawRepresentation is ChatResponseUpdate chatResponseUpdate2)
+              {
+                var hasErrorCode = chatResponseUpdate2.Contents?.Any(c => 
+                  c is not null && 
+                  c.GetType().GetProperty("ErrorCode")?.GetValue(c) is not null) ?? false;
+                
+                if (hasErrorCode)
+                {
+                  Console.ForegroundColor = ConsoleColor.Red;
+                  Console.WriteLine("\n[STREAM] ErrorCode in Contents!");
+                  Console.WriteLine(JsonSerializer.Serialize(chatResponseUpdate2.Contents, new JsonSerializerOptions { WriteIndented = true }));
+                  Console.ResetColor();
                 }
               }
 
