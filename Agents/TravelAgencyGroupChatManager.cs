@@ -26,8 +26,8 @@ internal sealed class TravelAgencyGroupChatManager : GroupChatManager
 
     if (this.IterationCount == this.MaximumIterationCount - 1)
     {
-      var finalAgent = this._agents.FirstOrDefault(a => a.Name == "Reisebüroangestellter 2");
-      ArgumentNullException.ThrowIfNull(finalAgent, "Reisebüroangestellter 2 agent not found in agents list.");
+      var finalAgent = this._agents.FirstOrDefault(a => a.Name == "Reisebüroangestellter für Buchungen");
+      ArgumentNullException.ThrowIfNull(finalAgent, "Reisebüroangestellte für Buchungen not found in agents list.");
       return new ValueTask<AIAgent>(finalAgent);
     }
 

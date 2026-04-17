@@ -39,7 +39,7 @@ internal class TravelAgencyExpert
      .GetChatClient(deploymentName) // ← Chat Completions API statt Responses API to avaoid 404
      .AsAIAgent(
         instructions,
-        name: "Reisebüroangestellter 1",
+        name: "Empfangsdame Heidi",
         description: "Erster Ansprechpartner im Reisebüro",
         //tools: [ AIFunctionFactory.Create(Tools.GetCountries) ],
         clientFactory: (client) => client.AsBuilder()

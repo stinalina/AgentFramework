@@ -41,7 +41,7 @@ internal class BookingExpert
      .GetChatClient(deploymentName) // ← Chat Completions API statt Responses API to avoid 404
      .AsAIAgent(
         instructions,
-        name: "Reisebüroangestellter 2",
+        name: "Reisebüroangestellter für Buchungen",
         description: "Finaler Ansprechpartner im Reisebüro, der die Buchug durchführt.",
         clientFactory: (client) => client.AsBuilder()
           .ConfigureOptions(options =>
