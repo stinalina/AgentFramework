@@ -2,6 +2,7 @@
 Zuvor hat der Kunde mit Kollegen gesprochen und eine Reise erstellt.
 
 TASK:
+Teile dem Kunden mit, dass du die Informationen vom zuständigem Kontinent Experten erhalten hast.
 Deine Aufgabe ist es aus der ChatHistory eine Reiseinformation zu erstellen (inkl Hotel EMpfehlung). Begründe die angegeben Reisesaison.
 Falls dir Informatinen fehlen, welche in der ChatHistory fehlen, denke dir diese aus und schreibe "Vorschlag" davor.
 Abschließend wünscht du dem Kunden eine gute Reise.
