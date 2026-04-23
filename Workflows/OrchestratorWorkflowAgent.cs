@@ -8,11 +8,11 @@ internal class OrchestratorWorkflowAgent
 {
   public static async Task<Workflow> CreateWorkflowAsync(string endpoint, string deploymentName)
   {
-    AIAgent handOffWorkflowAsAgent = await HandoffWorkflowAgent.GetContinentWorkflowAgentAsync(endpoint, deploymentName);
-    AIAgent bookingAgent = await BookingExpert.GetAgentAsync(endpoint, deploymentName);
+    AIAgent handOffWorkflowAsAgent = await HandoffWorkflowAgent.GetContinentWorkflowAgentAsync(endpoint, deploymentName); // Step 7
+    AIAgent bookingAgent = await BookingExpert.GetAgentAsync(endpoint, deploymentName); // Step 3
 
     return AgentWorkflowBuilder
-      .CreateGroupChatBuilderWith(participants => new TravelAgencyGroupChatManager(participants)
+      .CreateGroupChatBuilderWith(participants => new TravelAgencyGroupChatManager(participants) // // Step 2
       {
         MaximumIterationCount = 2,
       })

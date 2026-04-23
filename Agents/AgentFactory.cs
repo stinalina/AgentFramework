@@ -1,6 +1,4 @@
-﻿using Azure.AI.OpenAI;
-using Azure.Identity;
-using Microsoft.Agents.AI;
+﻿using Microsoft.Agents.AI;
 using Microsoft.Extensions.AI;
 using OpenAI.Responses;
 using OpenAI.Chat;
@@ -31,17 +29,17 @@ internal static class AgentFactory
       .ReadAllText(Path.Combine(AppContext.BaseDirectory, $"instructions/continent_agent.instructions.txt"))
       .Replace("<continent>", continent.ToString());
 
-    var wikipediaTools = await Tools.WikipediaMCPTool();
+    var wikipediaTools = Tools.WikipediaAIFunctions();
 
     return AzureOpenAIClientFactory.Create(endpoint)
       .GetChatClient(deploymentName)
       .AsAIAgent(
-        instructions,
+        instructions, // Step 9
         name: $"{continent} Expert",
         description: $"An expert in all questions related to {continent}.",
         tools: [
-          AIFunctionFactory.Create(Tools.GetCountries),
-          ..wikipediaTools.Cast<AITool>(),
+          AIFunctionFactory.Create(Tools.GetCountries), // Step 10
+          ..wikipediaTools,
           ]
           //new InMemoryChatHistoryProvider(new InMemoryChatHistoryProviderOptions{
           //  ChatReducer = new MessageCountingChatReducer(10)
@@ -55,7 +53,7 @@ internal static class AgentFactory
             options.MaxOutputTokens = 4096;
             options.AllowMultipleToolCalls = true;
             options.ToolMode = ChatToolMode.Auto;
-            options.AllowBackgroundResponses = false; // Deaktiviert wegen Continuation-Fehler
+            options.AllowBackgroundResponses = false;
           })
           .UseFunctionInvocation()
           .Build()
@@ -63,7 +61,7 @@ internal static class AgentFactory
       .AsBuilder()
       //.Use(runFunc: CustomMiddleware.DebugMessagesMiddleware, runStreamingFunc: null)
       //.Use(runFunc: CustomMiddleware.CustomAgentRunMiddleware, runStreamingFunc: CustomMiddleware.CustomAgentRunStreamingMiddleware)
-      .Use(CustomMiddleware.FunctionMiddleware_LogUsedTool) //Die .AsBuilder().Use(FunctionMiddleware_LogUsedTool).Build() fügt die Middleware dagegen auf der Agent-Pipeline-Ebene hinzu – diese wird von der internen Chat-Pipeline nicht durchlaufen.
+      .Use(CustomMiddleware.FunctionMiddleware_LogUsedTool) // Step 11
       .Build();
   }
 }

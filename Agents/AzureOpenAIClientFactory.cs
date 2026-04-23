@@ -16,17 +16,16 @@ internal static class AzureOpenAIClientFactory
   {
     var uri = new Uri(endpoint);
 
-    // Container / CI: API Key hat Vorrang
     if (Environment.GetEnvironmentVariable("AZURE_OPENAI_API_KEY") is { Length: > 0 } apiKey)
       return new AzureOpenAIClient(uri, new Azure.AzureKeyCredential(apiKey));
 
     string? tenantId = Environment.GetEnvironmentVariable("AZURE_TENANT_ID");
 
-    TokenCredential credential = new ChainedTokenCredential(
+    TokenCredential credential = new ChainedTokenCredential( //der Reihe nach durch probieren...
         new AzureCliCredential(new AzureCliCredentialOptions { TenantId = tenantId }),
         new ManagedIdentityCredential()
     );
 
-    return new AzureOpenAIClient(uri, credential);
+    return new AzureOpenAIClient(uri, credential); // Step 5
   }
 }

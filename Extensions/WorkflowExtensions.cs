@@ -103,7 +103,7 @@ public static class WorkflowExtensions
         string? lastAuthorName = null;
         await foreach (WorkflowEvent evt in run.WatchStreamAsync().ConfigureAwait(false))
         {
-          switch (evt)
+          switch (evt) // Step 12
           {
             case AgentResponseUpdateEvent update:
               {

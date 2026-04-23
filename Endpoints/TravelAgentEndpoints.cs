@@ -20,18 +20,18 @@ public static class TravelAgentEndpoints
     _endpoint = endpoint;
     _deploymentName = deploymentName;
 
-    var group = app.MapGroup("api/travelagent/conversation");
+    var group = app.MapGroup("api/travelagent/conversation"); // Step 14 
 
-    group.MapPost("stream", StreamConversation)
+    group.MapPost("stream", StreamConversation) // Step 15 
       .WithName(nameof(StreamConversation))
       .Produces(StatusCodes.Status400BadRequest, contentType: "application/json")
-      .Produces(StatusCodes.Status200OK, contentType: "text/event-stream");
+      .Produces(StatusCodes.Status200OK, contentType: "text/event-stream"); // Step 18
   }
 
-  public static Results<BadRequest<string>, ServerSentEventsResult<ResponseStreamChunk>> StreamConversation(
+  public static Results<BadRequest<string>, ServerSentEventsResult<ResponseStreamChunk>> StreamConversation( // Step 16
     [FromBody] string question, CancellationToken cancellationToken)
   {
-    return TypedResults.ServerSentEvents(GetChunks(question, cancellationToken), eventType: "agent-update");
+    return TypedResults.ServerSentEvents(GetChunks(question, cancellationToken), eventType: "agent-update"); // Step 17
   }
 
   private static async IAsyncEnumerable<ResponseStreamChunk> GetChunks(string question,
@@ -57,7 +57,7 @@ public static class TravelAgentEndpoints
 
     await foreach (ResponseStreamChunk chunk in workflow!.ExecuteWorkflowStreamAsync(question, cancellationToken))
     {
-      yield return chunk;
+      yield return chunk; // Step 19
     }
   }
 }

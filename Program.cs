@@ -23,7 +23,7 @@ string deploymentName = Environment.GetEnvironmentVariable("AZURE_OPENAI_DEPLOYM
   ?? throw new InvalidOperationException("AZURE_OPENAI_DEPLOYMENT_NAME is not set.");
 
 
-#if true
+#if false
 #region API
 
 var builder = WebApplication.CreateBuilder(args);
@@ -65,7 +65,7 @@ if (Environment.GetEnvironmentVariable("DOTNET_RUNNING_IN_CONTAINER") != "true")
 
 app.UseCors("AllowAnyOrigin");
 
-app.MapTravelAgentEndpoints(endpoint, deploymentName);
+app.MapTravelAgentEndpoints(endpoint, deploymentName); // Step 13
 
 app.Lifetime.ApplicationStopped.Register(() => { });
 app.Run();
@@ -82,7 +82,7 @@ app.Run();
 //  schemaDescription: "Information about a Trip including all required, well structures data."
 // ),
 
-Workflow workflow = await OrchestratorWorkflowAgent.CreateWorkflowAsync(endpoint, deploymentName);
+Workflow workflow = await OrchestratorWorkflowAgent.CreateWorkflowAsync(endpoint, deploymentName); // Step 1
 await workflow.ExecuteWorkflowAsync();
 
 // When in-memory chat history storage is used, it's possible to access the chat history
