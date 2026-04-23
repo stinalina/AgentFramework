@@ -52,7 +52,7 @@ internal static class AgentFactory
             options.TopP = 0.8f;
             options.MaxOutputTokens = 4096;
             options.AllowMultipleToolCalls = true;
-            options.ToolMode = ChatToolMode.Auto;
+            options.ToolMode = ChatToolMode.RequireAny;
             options.AllowBackgroundResponses = false;
           })
           .UseFunctionInvocation()
