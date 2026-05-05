@@ -7,5 +7,5 @@ Console.WriteLine("Type 'exit' or 'quit' to end the conversation.");
 Console.WriteLine("--------------------------------------------------");
 Console.ResetColor();
 
-var localAgent = await LocalAgent.CreateAgent();
-await localAgent.StartConversationAsync("Bis wann reicht dein Wissensstand?");
+var continentAgents = await AgentFactory.CreateAgentExpertsAsync();
+await continentAgents["Europe"].StartConversationAsync("Nenne mir den meist besuchten Ort in Europa 2024.");

@@ -64,8 +64,20 @@ internal static class Tools
   {
     try
     {
-      var options = new HttpClientTransportOptions { Endpoint = new Uri(_mcpServerUrl) };
-      await using var client = await McpClient.CreateAsync(new HttpClientTransport(options));
+      await using var client = await McpClient.CreateAsync(new StdioClientTransport(new()
+      {
+        Name = "Wikipedia MCP Server",
+        Command = "docker",
+        Arguments = [
+            "run",
+            "-i",
+            "--rm",
+            "mcp/wikipedia-mcp"
+        ],
+      }));
+
+      //var options = new HttpClientTransportOptions { Endpoint = new Uri(_mcpServerUrl) };
+      //await using var client = await McpClient.CreateAsync(new HttpClientTransport(options));
 
       var tools = await client.ListToolsAsync(cancellationToken: cancellationToken);
       var tool = tools.FirstOrDefault(t => t.Name == toolName);

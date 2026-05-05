@@ -6,13 +6,10 @@ namespace AgentFramework.Agents;
 
 internal class LocalAgent
 {
-    public static async Task<AIAgent> CreateAgent() 
+    public static IChatClient CreateAgent() 
     { 
-        var chatClient = new OllamaApiClient(
+        return new OllamaApiClient(
             new Uri("http://localhost:11434"),
             defaultModel: "gemma4:e2b");
-
-        return chatClient.AsAIAgent(
-            instructions: "Du bist ein lokales LLM laufen auf Ollama.");
     }
 }
