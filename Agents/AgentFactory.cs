@@ -1,27 +1,24 @@
 ﻿using Microsoft.Agents.AI;
 using Microsoft.Extensions.AI;
-using OpenAI.Responses;
-using OpenAI.Chat;
-using OpenAI.Assistants;
 
 namespace AgentFramework.Agents;
 
 internal static class AgentFactory
 {
-    public static async Task<Dictionary<string, AIAgent>> CreateAgentExpertsAsync()
+    public static Dictionary<string, AIAgent> CreateAgentExperts()
     {
         var continentExperts = new Dictionary<string, AIAgent>();
 
         foreach (var continent in Enum.GetValues<Continent>())
         {
-            AIAgent agent = await CreateContinentExpertAsync(continent);
+            AIAgent agent = CreateContinentExpert(continent);
             continentExperts.Add(continent.ToString(), agent);
         }
 
         return continentExperts;
     }
 
-    private static async Task<AIAgent> CreateContinentExpertAsync(Continent continent)
+    private static AIAgent CreateContinentExpert(Continent continent)
     {
         Console.WriteLine($"Creating {continent} Expert...");
 
@@ -31,7 +28,7 @@ internal static class AgentFactory
 
         var wikipediaTools = Tools.WikipediaAIFunctions();
 
-        return LocalAgent.CreateAgent()
+        return LocalAgent.Create()
            .AsBuilder()
            .ConfigureOptions(options =>
            {

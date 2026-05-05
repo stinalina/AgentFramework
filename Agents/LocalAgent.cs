@@ -1,12 +1,11 @@
-﻿using Microsoft.Agents.AI;
-using Microsoft.Extensions.AI;
+﻿using Microsoft.Extensions.AI;
 using OllamaSharp;
 
 namespace AgentFramework.Agents;
 
 internal class LocalAgent
 {
-    public static IChatClient CreateAgent() 
+    public static IChatClient Create() 
     { 
         return new OllamaApiClient(
             new Uri("http://localhost:11434"),
