@@ -57,20 +57,26 @@ internal class CustomMiddleware
     Func<FunctionInvocationContext, CancellationToken, ValueTask<object?>> next,
     CancellationToken cancellationToken)
   {
-    try
-    {
-    Console.WriteLine($"\n[Function] Invoking: {context.Function.Name}");
+      Console.ForegroundColor = ConsoleColor.Green;
+      try
+        {
+        Console.WriteLine($"\n[Function] Invoking: {context.Function.Name}");
 
-      var result = await next(context, cancellationToken);
-      Console.WriteLine($"[Function] Result: {result}\n");
-      return result;
-    }
-    catch (Exception ex)
-    {
-      Console.WriteLine($"\n[Function] Error: {ex.Message}\n");
-      throw;
-    }
-  }
+            var result = await next(context, cancellationToken);
+            Console.WriteLine($"[Function] Result: {result}\n");
+            return result;
+       
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"\n[Function] Error: {ex.Message}\n");
+            throw;
+        } 
+        finally
+        {
+            Console.ResetColor();
+        }
+   }
 
   //For agents that are built using IChatClient, you might want to intercept calls going from the agent to the IChatClient. In this case,
   public static async Task<ChatResponse> CustomChatClientMiddleware(

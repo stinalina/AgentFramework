@@ -36,7 +36,7 @@ internal static class AgentFactory
                options.TopP = 0.8f;
                options.MaxOutputTokens = 4096;
                options.AllowMultipleToolCalls = true; //nicht unterstützt bei Ollama
-               options.ToolMode = ChatToolMode.RequireAny; //nicht unterstützt bei Ollama
+               options.ToolMode = ChatToolMode.Auto;
            })
            .UseFunctionInvocation()
            .Build()

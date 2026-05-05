@@ -48,7 +48,9 @@ internal static class WorkflowAgentExtensions
                     messages = await workflowAgent.ProcessWorkflowQuestionAsync(messages, userInput, session);
                 }
 
+                Console.ForegroundColor = ConsoleColor.White;
                 Console.WriteLine(JsonSerializer.Serialize(messages));
+                Console.ResetColor();
             }
             catch (Exception ex)
             {
@@ -90,7 +92,10 @@ internal static class WorkflowAgentExtensions
                 Console.WriteLine($"An error occurred: {ex.Message}\n");
                 return [];
             }
-            Console.ResetColor();
+            finally
+            {
+                Console.ResetColor();
+            }
         }
     }
 }

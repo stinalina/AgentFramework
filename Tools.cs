@@ -72,7 +72,9 @@ internal static class Tools
             "run",
             "-i",
             "--rm",
-            "mcp/wikipedia-mcp"
+            "mcp/wikipedia-mcp",
+            "--language",
+            "de"
         ],
       }));
 
