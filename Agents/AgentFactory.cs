@@ -3,6 +3,15 @@ using Microsoft.Extensions.AI;
 
 namespace AgentFramework.Agents;
 
+internal enum Continent
+{
+    Africa,
+    America,
+    Europe,
+    Asia,
+    Oceania,
+}
+
 internal static class AgentFactory
 {
     public static Dictionary<string, AIAgent> CreateAgentExperts()
@@ -35,22 +44,19 @@ internal static class AgentFactory
                options.Temperature = 0.3f;
                options.TopP = 0.8f;
                options.MaxOutputTokens = 4096;
-               options.AllowMultipleToolCalls = true; //nicht unterstützt bei Ollama
                options.ToolMode = ChatToolMode.Auto;
            })
-           .UseFunctionInvocation()
            .Build()
           .AsAIAgent(
-            instructions, // Step 9
+            instructions,
             name: $"{continent} Expert",
             description: $"An expert in all questions related to {continent}.",
             tools: [
-              AIFunctionFactory.Create(Tools.GetCountries), // Step 10
             ..wikipediaTools,
              ]
-            )
+           )
           .AsBuilder()
-          .Use(CustomMiddleware.FunctionMiddleware_LogUsedTool) // Step 11
+          .Use(CustomMiddleware.FunctionMiddleware_LogUsedTool)
           .Build();
     }
 }

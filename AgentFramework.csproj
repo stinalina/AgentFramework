@@ -16,14 +16,11 @@
 		<PackageReference Include="Microsoft.Extensions.AI.Abstractions" Version="10.5.0" />
 		
 		<PackageReference Include="ModelContextProtocol" Version="1.0.0" />
-		<PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
 		<PackageReference Include="OllamaSharp" Version="5.4.25" />
-		<PackageReference Include="OpenTelemetry.Api" Version="1.15.3" />
 	</ItemGroup>
 
 
 	<ItemGroup>
 		<Content Include="instructions/**" CopyToOutputDirectory="PreserveNewest" />
-		<Content Include=".env" CopyToOutputDirectory="PreserveNewest" Condition="Exists('.env')" />
 	</ItemGroup>
 </Project>

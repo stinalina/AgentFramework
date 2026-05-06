@@ -1,5 +1,4 @@
-﻿using AgentFramework.Agents;
-using AgentFramework.Extensions;
+﻿using AgentFramework.Extensions;
 using AgentFramework.Workflows;
 
 Console.ForegroundColor = ConsoleColor.DarkMagenta;
