@@ -8,9 +8,7 @@ internal class HandoffWorkflowAgent
 {
     public static AIAgent GetContinentWorkflowAgentAsync()
     {
-        Workflow instance = CreateWorkflow();
-
-        return instance
+        return CreateWorkflow()
           .AsAIAgent(
             id: "workflow-agent",
             name: "Continent Expert Handoff Workflow Agent",
@@ -49,17 +47,12 @@ internal class HandoffWorkflowAgent
                .WithHandoffs(allContinentAgents.Except([oceaniaExpert]), oceaniaExpert, "Das angefragte Land bezieht sich auf Oceanien.");
 
         // Allow Continent Experts to remain active (loop back to themselves)
+        // TODO brauch ich das?
         foreach (var agent in allContinentAgents)
         {
             builder.WithHandoff(agent, agent, "Weitere Details für das Reiseziel sammeln.");
         }
 
         return builder.Build();
-
-        //Console.WriteLine("=== WORKFLOW STRUCTURE ===");
-        //Console.WriteLine(workflow.ToDotString());
-        //Console.WriteLine("=========================\n");
-        //To create an image file from the DOT format, you can use GraphViz tools with the following command
-        // dotnet run | tail -n +20 | dot -Tpng -o workflow.png
     }
 }

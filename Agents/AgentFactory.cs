@@ -3,14 +3,7 @@ using Microsoft.Extensions.AI;
 
 namespace AgentFramework.Agents;
 
-internal enum Continent
-{
-    Africa,
-    America,
-    Europe,
-    Asia,
-    Oceania,
-}
+internal enum Continent { Africa, America, Europe, Asia, Oceania }
 
 internal static class AgentFactory
 {

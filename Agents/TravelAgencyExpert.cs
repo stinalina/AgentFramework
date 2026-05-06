@@ -13,14 +13,11 @@ internal class TravelAgencyExpert
         string instructions = File.ReadAllText(
           Path.Combine(AppContext.BaseDirectory, $"instructions/travel_agency_employee.instructions.txt"));
 
-
         return LocalAgent.Create()
          .AsAIAgent(
             instructions,
             name: "Empfangsdame Heidi",
             description: "Erster Ansprechpartner im Reisebüro"
-            )
-         .AsBuilder() //TODO was ist AsBuilder und was Build()
-         .Build();
+          );
     }
 }
