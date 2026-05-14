@@ -1,5 +1,6 @@
 ﻿using AgentFramework.Extensions;
 using AgentFramework.Workflows;
+using System.Text.Json;
 
 Console.ForegroundColor = ConsoleColor.DarkMagenta;
 Console.WriteLine("Lokales LLM 'gemma4:e2b' ausgeführt mit Ollama.");
@@ -8,4 +9,6 @@ Console.WriteLine("--------------------------------------------------");
 Console.ResetColor();
 
 var workflowAgent = HandoffWorkflowAgent.GetContinentWorkflowAgentAsync();
-await workflowAgent.StartWorkflowAgentConversationAsync();
+var conversation = await workflowAgent.StartWorkflowAgentConversationAsync();
+
+Console.WriteLine(JsonSerializer.Serialize(conversation));

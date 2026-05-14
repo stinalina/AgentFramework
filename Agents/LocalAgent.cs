@@ -5,10 +5,5 @@ namespace AgentFramework.Agents;
 
 internal class LocalAgent
 {
-    public static IChatClient Create() 
-    { 
-        return new OllamaApiClient(
-            new Uri("http://localhost:11434"),
-            defaultModel: "gemma4:e2b");
-    }
+    public static IChatClient Create() => new OllamaApiClient(new Uri("http://localhost:11434"), defaultModel: "gemma4:e2b");
 }
