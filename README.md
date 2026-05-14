@@ -1,4 +1,4 @@
-# AgentFramework (in Entwicklung)
+# AgentFramework - Branch "Introduce Azure"
 Verwendung das Microsoft Agent Framework am Beispiel einer Azure Container App Anwendung.
 
 Es wird darauf hingearbeitet, folgende Aufgabenstellung zu erfüllen:
@@ -8,3 +8,5 @@ Zur Zielerreichung plane ich die fiktive Anwendung ["TripAdvisor-Agent-App"](htt
   • MCP Server für das spezifische bereitstellen der fiktiven Daten (hier Wikipedia)
   • Function Tools
   
+# AgentFramework - Branch "Use local LLM with Ollama"
+Der Code wurde als Console App angepasst, sodass nun Ollama genutzt werden kann. Ein Endpunkt wird somit nicht mehr gestellt.
