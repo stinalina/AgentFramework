@@ -5,3 +5,19 @@ dotnet_diagnostic.IDE0008.severity = none
 
 # MAAIW001: Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 dotnet_diagnostic.MAAIW001.severity = warning
+
+
+root = true
+
+[*.cs]
+indent_style = tab
+indent_size = 4
+tab_width = 4
+
+# C# formatting rules
+csharp_indent_block_contents = true
+csharp_indent_braces = false
+csharp_indent_case_contents = true
+csharp_indent_case_contents_when_block = false
+csharp_indent_switch_labels = true
+csharp_indent_labels = no_change

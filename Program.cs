@@ -8,4 +8,4 @@ Console.WriteLine("--------------------------------------------------");
 Console.ResetColor();
 
 var workflowAgent = HandoffWorkflowAgent.GetContinentWorkflowAgentAsync();
-await workflowAgent.StartWorkflowAgentConversationAsync("Erstelle mir eine Reise nach Wien.");
+await workflowAgent.StartWorkflowAgentConversationAsync();

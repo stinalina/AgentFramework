@@ -30,7 +30,8 @@ internal class HandoffWorkflowAgent
 
         var allContinentAgents = new List<AIAgent>() { africaExpert, americaExpert, asiaExpert, europeExpert, oceaniaExpert };
 
-        var builder = AgentWorkflowBuilder.CreateHandoffBuilderWith(travelAgencyExpert);
+        var builder = AgentWorkflowBuilder.CreateHandoffBuilderWith(travelAgencyExpert)
+            .EnableReturnToPrevious();
 
         // Handoffs from TravelAgencyExpert to Continent Experts
         builder.WithHandoff(travelAgencyExpert, africaExpert, "Das angefragte Land bezieht sich auf Afrika.")
