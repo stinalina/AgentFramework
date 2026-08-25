@@ -6,17 +6,8 @@ namespace AgentFramework;
 
 internal static class Tools
 {
-  [Description("Finde detaillierte Informationen über ein Land. Hilfreich beim Erstellen von Reisen. Erhalte ebenfalls einen Wikipedia Artikel.")]
-  public static IList<AIFunction> WikipediaAIFunctions()
-  {
-    return [
-      AIFunctionFactory.Create(SearchWikipedia),
-      AIFunctionFactory.Create(GetWikipediaSummary)
-    ];
-  }
-
   [Description("Suche nach Wikipedia-Artikeln zu einem Reiseziel, Land oder Sehenswürdigkeit.")]
-  private static async Task<string> SearchWikipedia(
+  public static async Task<string> SearchWikipedia(
     [Description("Suchbegriff, z.B. Ländername, Stadtname oder Reiseziel")] string query,
     CancellationToken cancellationToken = default)
   {
@@ -26,7 +17,7 @@ internal static class Tools
   }
 
   [Description("Rufe die Zusammenfassung eines Wikipedia-Artikels anhand seines Titels ab.")]
-  private static async Task<string> GetWikipediaSummary(
+  public static async Task<string> GetWikipediaSummary(
     [Description("Titel des Wikipedia-Artikels")] string title,
     CancellationToken cancellationToken = default)
   {
@@ -58,16 +49,14 @@ internal static class Tools
 
       var tools = await client.ListToolsAsync(cancellationToken: cancellationToken);
       var tool = tools.FirstOrDefault(t => t.Name == toolName);
+
       if (tool is null)
       {
         Console.WriteLine($"[WikipediaMCP] Tool '{toolName}' not found on server.");
         return string.Empty;
       }
 
-      Console.WriteLine($"[WikipediaMCP] Invoking '{toolName}' with fresh session.");
-      var result = await tool.InvokeAsync(
-        new AIFunctionArguments(arguments),
-        cancellationToken);
+      var result = await tool.InvokeAsync(new(arguments),cancellationToken);
         
       return result?.ToString() ?? string.Empty;
     }

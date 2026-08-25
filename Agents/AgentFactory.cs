@@ -28,8 +28,6 @@ internal static class AgentFactory
 		  .ReadAllText(Path.Combine(AppContext.BaseDirectory, $"instructions/continent_agent.instructions.txt"))
 		  .Replace("<continent>", continent.ToString());
 
-		var wikipediaTools = Tools.WikipediaAIFunctions();
-
 		return LocalAgent.Create()
 			.AsBuilder()
 			.ConfigureOptions(options =>
@@ -44,7 +42,10 @@ internal static class AgentFactory
 				instructions,
 				name: $"{continent} Expert",
 				description: $"An expert in all questions related to {continent}.",
-				tools: [.. wikipediaTools]
+				tools: [
+					AIFunctionFactory.Create(Tools.SearchWikipedia),
+					AIFunctionFactory.Create(Tools.GetWikipediaSummary)
+				]
 			)
 			.AsBuilder()
 			.Use(CustomMiddleware.FunctionMiddleware_LogUsedTool)

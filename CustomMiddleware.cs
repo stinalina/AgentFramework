@@ -14,8 +14,8 @@ internal class CustomMiddleware
         Console.ForegroundColor = ConsoleColor.Green;
         Console.WriteLine($"\n[Function] Invoking: {context.Function.Name}");
         var result = await next(context, cancellationToken);
-        Console.WriteLine($"[Function] Result: {result}\n");
-        Console.ResetColor();
+        Console.WriteLine($"[Function] Result: {(result?.ToString() is { Length: > 200 } text ? $"{text[..200]}..." : result?.ToString())}\n");
+		Console.ResetColor();
         return result;
     }
 }
